@@ -1,7 +1,7 @@
 <!doctype html>
 <html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
   <th:block th:fragment="head">
-    <title th:text="|${post.spec.title} - ${site.title}|">文章标题 - 站点标题</title>
+    <title th:text="|${post.spec.title} - ${site.title}|">文章标题 - 熹屿 Xiyu</title>
     <th:block th:if="${theme.config.seo.enable_metadata != false}">
   <link rel="canonical" th:href="${site.url + post.status.permalink}" />
   <meta property="og:type" th:content="article" />

@@ -1,7 +1,7 @@
 <!doctype html>
 <html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
   <th:block th:fragment="head">
-    <title th:text="|${singlePage.spec.title} - ${site.title}|">页面标题 - 站点标题</title>
+    <title th:text="|${singlePage.spec.title} - ${site.title}|">页面标题 - 熹屿 Xiyu</title>
     <include src="partials/seo.html" canonical="${site.url + singlePage.status.permalink}" title="${singlePage.spec.title}" description="${singlePage.status.excerpt}" image="${singlePage.spec.cover ?: site.logo}" type="article" />
   </th:block>
 

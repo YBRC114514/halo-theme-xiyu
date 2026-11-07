@@ -43,7 +43,7 @@
             <img th:if="${not #strings.isEmpty(gwLogo)}" th:src="${gwLogo}" th:alt="${brandName}" />
             <span class="gw-logo-mark" th:unless="${not #strings.isEmpty(gwLogo)}" th:text="${#strings.isEmpty(brandName) ? 'H' : #strings.substring(brandName, 0, 1)}">H</span>
           </a>
-          <h1 class="gw-title" th:text="${gwTitle}">站点标题</h1>
+          <h1 class="gw-title" th:text="${gwTitle}">熹屿 Xiyu</h1>
           <p class="gw-sub" th:text="${#strings.isEmpty(gwSub) ? '欢迎回来，请先登录' : gwSub}">欢迎回来，请先登录</p>
         </header>
 

@@ -390,11 +390,21 @@ spec:
               value: "center"
             - label: 右侧
               value: "right"
+        - $formkit: switch
+          name: show_powered
+          label: 显示「Powered by Halo · XiYu」
+          help: 关闭后页脚只保留版权与备案信息
+          value: true
+        - $formkit: text
+          name: theme_repo_url
+          label: 主题仓库链接
+          help: 页脚「XiYu」指向的地址；改主题名或换了仓库时在这里调整
+          value: "https://github.com/YBRC114514/halo-theme-xiyu"
+
         - $formkit: textarea
           name: friends_desc
           label: 朋友圈页面说明
           value: "朋友们的近况与最近更新，按订阅聚合在这里。"
-
     # ------------------------------------------------------------------
     # 5. 外观配色
     # ------------------------------------------------------------------

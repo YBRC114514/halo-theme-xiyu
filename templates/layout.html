@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" th:if="${not #strings.isEmpty(site.favicon)}" th:href="${site.favicon}" />
     <link rel="icon" th:unless="${not #strings.isEmpty(site.favicon)}" type="image/svg+xml" th:href="${#theme.assets('/favicon.svg')}" />
-    <title th:if="${head == null}" th:text="${site.title}">站点标题</title>
+    <title th:if="${head == null}" th:text="${site.title}">熹屿 Xiyu</title>
     <th:block th:if="${head != null}"><th:block th:replace="${head}" /></th:block>
     <script>
       (function () {
@@ -22,9 +22,9 @@
         r.setAttribute("data-scheme-mode", mode);
         r.classList.add("color-scheme-" + finalAttr);
       })();
-    </script>
-    <script type="module" crossorigin src="/themes/theme-xiyu/assets/layout-BL0jN46v.js"></script>
-    <link rel="stylesheet" crossorigin href="/themes/theme-xiyu/assets/layout-B10PjSCx.css">
+    </script>
+    <script type="module" crossorigin src="/themes/theme-xiyu/assets/layout-DcHTeH4P.js"></script>
+    <link rel="stylesheet" crossorigin href="/themes/theme-xiyu/assets/layout-BWUg2E38.css">
   </head>
   <body th:attr="data-show-reveal=${theme.config.features.show_reveal != false}, data-code-copy=${theme.config.features.show_code_copy != false}">
     <svg class="svg-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -73,7 +73,7 @@
         <a class="brand-pill" th:href="@{/}" th:with="brandName = ${theme.config.home.brand_title ?: theme.config.home.hero_title ?: site.title}, brandImg = ${theme.config.home.brand_logo ?: site.logo}">
           <img th:if="${not #strings.isEmpty(brandImg)}" th:src="${brandImg}" th:alt="${brandName}" />
           <span class="brand-mark" th:unless="${not #strings.isEmpty(brandImg)}" th:text="${#strings.isEmpty(brandName) ? '青' : #strings.substring(brandName, 0, 1)}">青</span>
-          <span class="brand-text" th:text="${brandName}">站点标题</span>
+          <span class="brand-text" th:text="${brandName}">熹屿 Xiyu</span>
         </a>
 
         <div class="nav-panel" id="nav-panel">
@@ -157,13 +157,14 @@
                    lic=${theme.config.footer.copyright_type ?: 'reserved'},
                    copyAlign=${theme.config.footer.copyright_align ?: 'right'}"
           th:attr="data-copy-align=${copyAlign}"
+          th:classappend="${theme.config.features.show_backtop != false} ? 'has-backtop' : ''"
         >
           <span class="footer-beian" th:if="${not #strings.isEmpty(theme.config.basic.beian)}">
             <svg class="icon" aria-hidden="true"><use href="#i-shield"></use></svg>
             <span th:text="${theme.config.basic.beian}">闽ICP备00000000号</span>
           </span>
           <span class="footer-copy">
-            <span class="footer-copy-main">© <span th:text="${copyStart}">2025</span><th:block th:if="${copyStart != nowYear}"> — <span th:text="${nowYear}">2026</span></th:block> By <span class="footer-copy-name" th:text="${copyName}">站点标题</span></span>
+            <span class="footer-copy-main">© <span th:text="${copyStart}">2025</span><th:block th:if="${copyStart != nowYear}"> — <span th:text="${nowYear}">2026</span></th:block> By <span class="footer-copy-name" th:text="${copyName}">熹屿 Xiyu</span></span>
             <th:block th:if="${lic != 'none'}">
               <span class="footer-license" th:switch="${lic}">
                 <span th:case="'reserved'">保留所有权利</span>
@@ -181,6 +182,9 @@
                 <th:block th:case="*"></th:block>
               </span>
             </th:block>
+            <span class="footer-powered" th:if="${theme.config.footer.show_powered != false}">
+              Powered by <a href="https://halo.run" target="_blank" rel="noopener noreferrer">Halo</a> · <a th:href="${theme.config.footer.theme_repo_url ?: 'https://github.com/YBRC114514/halo-theme-xiyu'}" target="_blank" rel="noopener noreferrer">XiYu</a>
+            </span>
           </span>
         </div>
         <halo:footer />

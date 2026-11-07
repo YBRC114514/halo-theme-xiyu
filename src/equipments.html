@@ -1,7 +1,7 @@
 <!doctype html>
 <html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
   <th:block th:fragment="head">
-    <title th:text="|${title} - ${site.title}|">装备 - 站点标题</title>
+    <title th:text="|${title} - ${site.title}|">装备 - 熹屿 Xiyu</title>
     <include src="partials/seo.html" canonical="${site.url + '/equipments'}" title="|${title} - ${site.title}|" description="${site.subtitle}" image="${site.logo}" type="website" />
   </th:block>
 

@@ -1,7 +1,7 @@
 <!doctype html>
 <html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
   <th:block th:fragment="head">
-    <title th:text="|文章归档 - ${site.title}|">文章归档 - 站点标题</title>
+    <title th:text="|文章归档 - ${site.title}|">文章归档 - 熹屿 Xiyu</title>
     <include src="partials/seo.html" canonical="${site.url + site.routes.archivesUri}" title="|文章归档 - ${site.title}|" description="${site.subtitle}" image="${site.logo}" type="website" />
   </th:block>
 

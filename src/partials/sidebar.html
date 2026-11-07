@@ -9,7 +9,7 @@
         <img class="profile-avatar" th:if="${not #strings.isEmpty(avatarImg)}" th:src="${avatarImg}" th:alt="${site.title}" />
         <span class="profile-avatar-fallback" th:unless="${not #strings.isEmpty(avatarImg)}" th:text="${#strings.isEmpty(site.title) ? '青' : #strings.substring(site.title, 0, 1)}">青</span>
       </div>
-      <h2 class="profile-name" th:text="${theme.config.basic.profile_name ?: site.title}">站点标题</h2>
+      <h2 class="profile-name" th:text="${theme.config.basic.profile_name ?: site.title}">熹屿 Xiyu</h2>
       <p class="profile-bio" th:text="${theme.config.basic.intro ?: site.subtitle}">个人简介</p>
       <div class="profile-actions" th:if="${theme.config.basic.show_profile_buttons != false}"
            th:with="btn1Mode=${theme.config.basic.profile_btn1_mode ?: 'login'}, btn2Icon=${#strings.isEmpty(theme.config.basic.profile_btn2_icon) ? 'rss' : theme.config.basic.profile_btn2_icon}">
