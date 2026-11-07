@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" th:if="${not #strings.isEmpty(site.favicon)}" th:href="${site.favicon}" />
-    <link rel="icon" th:unless="${not #strings.isEmpty(site.favicon)}" href="data:," />
+    <link rel="icon" th:unless="${not #strings.isEmpty(site.favicon)}" type="image/svg+xml" th:href="${#theme.assets('/favicon.svg')}" />
     <title th:if="${head == null}" th:text="${site.title}">站点标题</title>
     <th:block th:if="${head != null}"><th:block th:replace="${head}" /></th:block>
     <script>

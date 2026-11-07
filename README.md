@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/icon-128.png" width="96" height="96" alt="熹屿 Xiyu" />
+</p>
+
 # 熹屿 Xiyu
 
 一座为文字留白的岛 —— 面向 Halo 2.26+ 的响应式博客主题：杂志式首屏、克制的卡片流、清透的青蓝配色与柔和暗色模式，配合滑动高亮目录、文章入场动效、创作日历、友链自助申请与朋友圈订阅聚合。
@@ -61,7 +65,10 @@ npm run dev          # watch 模式，边改边构建
 │   └── js/main.ts       # 交互：导航抽屉、目录高亮、视图切换、浮动按钮等
 ├── public/              # 原样复制的静态资源
 │   ├── assets/gateway.css
+│   ├── assets/logo.svg  # 主题标识（线条版，随文字颜色变化）
+│   ├── assets/favicon.svg  # 站点图标（深底圆形，未设置站点 favicon 时兜底）
 │   └── error/error.html # 错误页（独立骨架）
+├── assets/              # 品牌素材：icon-{512..16}.png 与 social-preview.png
 ├── templates/           # 构建产物：最终主题模板与哈希资源
 ├── dist/                # 构建产物：可安装的 ZIP
 ├── theme.yaml           # 主题元信息（标识、版本、配置资源名）
