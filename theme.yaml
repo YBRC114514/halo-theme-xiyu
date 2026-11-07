@@ -8,7 +8,7 @@ spec:
     name: 拥抱日出
     website: https://blog.byside.top
   description: 一座为文字留白的岛。熹屿是一款面向 Halo 2.26+ 的响应式博客主题：杂志式首屏、克制的卡片流、清透的青蓝配色与柔和暗色模式，配合滑动高亮目录、文章入场动效、创作日历、友链自助申请与朋友圈订阅聚合，让阅读与写作都更从容。
-  logo: "https://cdn.jsdelivr.net/gh/YBRC114514/halo-theme-xiyu@main/assets/icon-256.png"
+  logo: "/themes/theme-xiyu/assets/icon-256.png"
   homepage: "https://github.com/YBRC114514/halo-theme-xiyu"
   repo: "https://github.com/YBRC114514/halo-theme-xiyu"
   issues: "https://github.com/YBRC114514/halo-theme-xiyu/issues"
