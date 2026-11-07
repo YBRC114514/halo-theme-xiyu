@@ -1,0 +1,39 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
+  <th:block th:fragment="head">
+    <title th:text="|${tag.spec.displayName} - ${site.title}|">标签名称 - 站点标题</title>
+    <include src="partials/seo.html" canonical="${site.url + tag.status.permalink}" title="|${tag.spec.displayName} - ${site.title}|" description="${site.subtitle}" image="${tag.spec.cover ?: site.logo}" type="website" />
+  </th:block>
+
+  <th:block th:fragment="content">
+    <div class="shell">
+      <div class="page-head">
+        <nav class="breadcrumb" aria-label="面包屑"><a th:href="@{/}">首页</a><span>/</span><a th:href="@{${site.routes.tagsUri}}">全部标签</a><span>/</span><span th:text="${tag.spec.displayName}">标签</span></nav>
+        <h1 th:text="|# ${tag.spec.displayName}|"># 标签名称</h1>
+        <p th:text="|该标签下共 ${posts.total} 篇文章|">该标签下的文章</p>
+      </div>
+
+      <div class="content-grid" th:classappend="${theme.config.layout.show_sidebar == false} ? 'no-sidebar' : ''" th:attr="data-sidebar=${theme.config.layout.sidebar_position ?: 'right'}">
+        <div class="content-main">
+          <div class="section-bar">
+            <h2 class="section-title">标签文章</h2>
+            <span class="section-hint" th:text="|第 ${posts.page} / ${posts.totalPages} 页|">第 1 页</span>
+          </div>
+
+          <div class="post-grid" data-post-grid th:classappend="${(theme.config.layout.grid_columns ?: '2') == '3'} ? 'cols-3' : ''" th:attr="data-default-view=${theme.config.layout.home_layout ?: 'grid'}">
+            <include src="partials/post-card.html" />
+          </div>
+
+          <div class="empty-state" th:if="${#lists.isEmpty(posts.items)}">
+            <svg class="icon" aria-hidden="true"><use href="#i-tag"></use></svg>
+            <p>这个标签下暂时没有文章。</p>
+          </div>
+
+          <include src="partials/pagination.html" />
+        </div>
+
+        <include src="partials/sidebar.html" />
+      </div>
+    </div>
+  </th:block>
+</html>

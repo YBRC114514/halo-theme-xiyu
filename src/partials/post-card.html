@@ -1,0 +1,21 @@
+<article class="post-card" th:each="post : ${posts.items}" th:classappend="${post.spec.pinned} ? 'featured'" data-reveal>
+  <a class="post-cover" th:href="@{${post.status.permalink}}" th:if="${theme.config.layout.show_cover != false}"
+     th:classappend="${#strings.isEmpty(post.spec.cover)} ? 'is-empty' : ''"
+     th:attr="aria-label=${post.spec.title}, data-glyph=${#strings.isEmpty(post.spec.cover) ? #strings.substring(post.spec.title, 0, 1) : ''}">
+    <img th:if="${not #strings.isEmpty(post.spec.cover)}" th:src="${post.spec.cover}" th:alt="${post.spec.title}" loading="lazy" decoding="async" />
+    <span class="cover-badge" th:if="${not #lists.isEmpty(post.categories)}" th:text="${post.categories[0].spec.displayName}">分类</span>
+  </a>
+  <div class="post-body">
+    <h2 class="post-title"><a th:href="@{${post.status.permalink}}" th:text="${post.spec.title}">文章标题</a></h2>
+    <p class="post-excerpt" th:if="${theme.config.layout.show_excerpt != false and not #strings.isEmpty(post.status.excerpt)}" th:text="${post.status.excerpt}">文章摘要</p>
+    <div class="post-meta" th:if="${theme.config.layout.show_post_meta != false}">
+      <span><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg><time th:datetime="${post.spec.publishTime}" th:text="${#temporals.format(post.spec.publishTime, 'yyyy-MM-dd')}">2026-01-01</time></span>
+      <span th:if="${not #lists.isEmpty(post.categories)}"><svg class="icon" aria-hidden="true"><use href="#i-folder"></use></svg><a th:href="@{${post.categories[0].status.permalink}}" th:text="${post.categories[0].spec.displayName}">分类</a></span>
+      <span><svg class="icon" aria-hidden="true"><use href="#i-eye"></use></svg><span th:text="${post.stats.visit}">0</span></span>
+      <span><svg class="icon" aria-hidden="true"><use href="#i-message"></use></svg><span th:text="${post.stats.comment}">0</span></span>
+    </div>
+    <div class="post-tags" th:if="${not #lists.isEmpty(post.tags)}">
+      <a class="chip" th:each="tag, state : ${post.tags}" th:if="${state.index < 2}" th:href="@{${tag.status.permalink}}" th:text="|# ${tag.spec.displayName}|"># 标签</a>
+    </div>
+  </div>
+</article>

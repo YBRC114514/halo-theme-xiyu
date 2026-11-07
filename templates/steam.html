@@ -1,0 +1,112 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
+  <th:block th:fragment="head">
+    <title th:text="|${title} - ${site.title}|">Steam 游戏库 - 站点标题</title>
+    <th:block th:if="${theme.config.seo.enable_metadata != false}">
+  <link rel="canonical" th:href="${site.url + '/steam'}" />
+  <meta property="og:type" th:content="website" />
+  <meta property="og:site_name" th:content="${site.title}" />
+  <meta property="og:title" th:content="|${title} - ${site.title}|" />
+  <meta property="og:url" th:content="${site.url + '/steam'}" />
+  <meta property="og:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta property="og:image" th:if="${site.logo}" th:content="${site.logo}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" th:content="|${title} - ${site.title}|" />
+  <meta name="twitter:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta name="twitter:image" th:if="${site.logo}" th:content="${site.logo}" />
+</th:block>
+
+  </th:block>
+
+  <th:block th:fragment="content">
+    <div class="shell"
+         th:with="profile=${steamFinder.getProfile()}, recent=${steamFinder.getRecentGames(recentGamesLimit)}, stats=${steamFinder.getStats()}, badges=${steamFinder.getBadges()}">
+      <div class="page-head">
+        <nav class="breadcrumb" aria-label="面包屑"><a th:href="@{/}">首页</a><span>/</span><span th:text="${title}">Steam 游戏库</span></nav>
+        <h1 th:text="${title}">Steam 游戏库</h1>
+        <p>玩过的、正在玩的，都在这里留个档。</p>
+      </div>
+
+      <section class="steam-profile" th:if="${profile != null and profile.summary != null}" data-reveal>
+        <img class="steam-avatar" th:if="${not #strings.isEmpty(profile.summary.avatarFull)}" th:src="${profile.summary.avatarFull}" th:alt="${profile.summary.personaName}" loading="lazy" />
+        <div class="steam-avatar media-cover-fallback" th:if="${#strings.isEmpty(profile.summary.avatarFull)}"><span>Steam</span></div>
+        <div class="steam-id">
+          <h2 th:text="${profile.summary.personaName ?: 'Steam 玩家'}">Steam 玩家</h2>
+          <span class="steam-status" th:text="${profile.statusText ?: '离线'}">离线</span>
+        </div>
+        <div class="steam-stats" th:if="${stats != null}">
+          <div class="steam-stat"><strong th:text="${stats.totalGames}">0</strong><span>游戏总数</span></div>
+          <div class="steam-stat"><strong th:text="${stats.totalPlaytimeFormatted ?: '0 分钟'}">0</strong><span>总时长</span></div>
+          <div class="steam-stat"><strong th:text="${stats.recentPlaytimeFormatted ?: '0 分钟'}">0</strong><span>近两周</span></div>
+          <div class="steam-stat" th:if="${badges != null}"><strong th:text="${badges.totalBadges}">0</strong><span>徽章</span></div>
+        </div>
+      </section>
+
+      <th:block th:if="${recent != null and not #lists.isEmpty(recent)}">
+        <h2 class="steam-section-title">最近在玩<em th:text="|${#lists.size(recent)} 款|">0 款</em></h2>
+        <div class="steam-recent">
+          <article class="media-card" th:each="game : ${recent}" data-reveal>
+            <div class="media-cover" th:if="${not #strings.isEmpty(game.headerImageUrl)}">
+              <img th:src="${game.headerImageUrl}" th:alt="${game.name}" loading="lazy" />
+            </div>
+            <div class="media-cover media-cover-fallback" th:if="${#strings.isEmpty(game.headerImageUrl)}">
+              <span th:text="${#strings.isEmpty(game.name) ? 'G' : #strings.substring(game.name, 0, 1)}">G</span>
+            </div>
+            <div class="media-body">
+              <h3 class="media-title" th:text="${game.name}">游戏名称</h3>
+              <div class="media-meta">
+                <span th:if="${not #strings.isEmpty(game.playtime2WeeksFormatted)}" th:text="|近两周 ${game.playtime2WeeksFormatted}|">近两周 0m</span>
+                <span class="media-badge" th:if="${game.hasAchievements()}" th:text="${game.achievementProgressText}">0/0</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </th:block>
+
+      <th:block th:if="${showHeatmap}">
+        <h2 class="steam-section-title">游玩热力<em>近 <span th:text="${heatmapDays}">30</span> 天</em></h2>
+        <div class="steam-heatmap" data-steam-heatmap th:attr="data-days=${heatmapDays}, data-echarts=${echartsUrl}">
+          <div class="steam-heatmap-chart" data-steam-chart></div>
+          <p class="steam-heatmap-tip" data-steam-tip>正在读取游玩记录…</p>
+        </div>
+      </th:block>
+
+      <h2 class="steam-section-title" th:if="${games != null and not #lists.isEmpty(games.items)}">
+        游戏库<em th:text="|共 ${games.total} 款|">共 0 款</em>
+      </h2>
+      <div class="media-grid" th:if="${games != null and not #lists.isEmpty(games.items)}">
+        <article class="media-card" th:each="game : ${games.items}" data-reveal>
+          <div class="media-cover" th:if="${not #strings.isEmpty(game.headerImageUrl)}">
+            <img th:src="${game.headerImageUrl}" th:alt="${game.name}" loading="lazy" />
+          </div>
+          <div class="media-cover media-cover-fallback" th:if="${#strings.isEmpty(game.headerImageUrl)}">
+            <span th:text="${#strings.isEmpty(game.name) ? 'G' : #strings.substring(game.name, 0, 1)}">G</span>
+          </div>
+          <div class="media-body">
+            <h3 class="media-title" th:text="${game.name}">游戏名称</h3>
+            <div class="media-meta">
+              <span th:text="${game.playtimeFormatted}">0m</span>
+              <span th:if="${not #strings.isEmpty(game.lastPlayedFormatted)}" th:text="|最后 ${game.lastPlayedFormatted}|">最后 2026-01-01</span>
+              <span class="media-badge" th:if="${game.delisted}">商店不可见</span>
+            </div>
+            <a class="media-link" th:if="${enableGameLink}" th:href="|https://store.steampowered.com/app/${game.appId}|" target="_blank" rel="noopener noreferrer">
+              打开商店<svg class="icon" aria-hidden="true"><use href="#i-external"></use></svg>
+            </a>
+          </div>
+        </article>
+      </div>
+
+      <div class="empty-state" th:if="${games == null or #lists.isEmpty(games.items)}">
+        <svg class="icon" aria-hidden="true"><use href="#i-folder"></use></svg>
+        <p>还没有读取到游戏库数据，请先在 Steam 插件中填写 API Key 与 SteamID。</p>
+      </div>
+
+      <nav class="pagination" th:if="${games != null and (games.hasPrevious() or games.hasNext())}" aria-label="分页导航">
+        <a th:if="${games.hasPrevious()}" th:href="@{${games.prevUrl}}"><svg class="icon" aria-hidden="true"><use href="#i-arrow-left"></use></svg>上一页</a>
+        <span class="page-num" th:text="|${games.page} / ${games.totalPages}|">1 / 1</span>
+        <a th:if="${games.hasNext()}" th:href="@{${games.nextUrl}}">下一页<svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg></a>
+      </nav>
+    </div>
+
+  </th:block>
+</html>

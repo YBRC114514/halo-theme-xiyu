@@ -1,0 +1,156 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
+  <th:block th:fragment="head">
+    <title th:text="|${author.spec.displayName} - ${site.title}|">关于我 - 站点标题</title>
+    <th:block th:if="${theme.config.seo.enable_metadata != false}">
+  <link rel="canonical" th:href="${site.url + author.status.permalink}" />
+  <meta property="og:type" th:content="profile" />
+  <meta property="og:site_name" th:content="${site.title}" />
+  <meta property="og:title" th:content="|${author.spec.displayName} - ${site.title}|" />
+  <meta property="og:url" th:content="${site.url + author.status.permalink}" />
+  <meta property="og:description" th:if="${author.spec.bio ?: site.subtitle}" th:content="${author.spec.bio ?: site.subtitle}" />
+  <meta property="og:image" th:if="${author.spec.avatar ?: site.logo}" th:content="${author.spec.avatar ?: site.logo}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" th:content="|${author.spec.displayName} - ${site.title}|" />
+  <meta name="twitter:description" th:if="${author.spec.bio ?: site.subtitle}" th:content="${author.spec.bio ?: site.subtitle}" />
+  <meta name="twitter:image" th:if="${author.spec.avatar ?: site.logo}" th:content="${author.spec.avatar ?: site.logo}" />
+</th:block>
+
+  </th:block>
+
+  <th:block th:fragment="content">
+    <div class="shell">
+      <div class="page-head">
+        <nav class="breadcrumb" aria-label="面包屑"><a th:href="@{/}">首页</a><span>/</span><span>关于</span></nav>
+        <h1 th:text="|关于 ${author.spec.displayName}|">关于我</h1>
+      </div>
+
+      <div class="content-grid no-sidebar">
+        <div th:with="mbtiOn=${theme.config.about.show_mbti != false}, mbtiType=${#strings.isEmpty(theme.config.about.mbti_type) ? 'INFP' : #strings.toUpperCase(theme.config.about.mbti_type)}, mbtiIdentity=${theme.config.about.mbti_identity == 'A' ? 'A' : 'T'}, calOn=${theme.config.about.show_contribution != false}, bioOn=${theme.config.about.show_bio != false}, activityCount=${#strings.isEmpty(theme.config.about.activity_count) ? 5 : #conversions.convert(theme.config.about.activity_count, 'java.lang.Integer')}, bioText=${#strings.isEmpty(theme.config.about.bio_text) ? (author.spec.bio ?: '') : theme.config.about.bio_text}">
+          <div class="author-hero" th:classappend="${calOn} ? '' : 'is-solo'">
+            <section class="author-card" data-reveal>
+              <div class="author-ring">
+                <img th:if="${not #strings.isEmpty(author.spec.avatar)}" th:src="${author.spec.avatar}" th:alt="${author.spec.displayName}" />
+                <span class="author-ring-fallback" th:unless="${not #strings.isEmpty(author.spec.avatar)}" th:text="${#strings.substring(author.spec.displayName, 0, 1)}">青</span>
+              </div>
+              <div class="author-info">
+                <p class="greeting" th:text="${theme.config.about.greeting ?: '嗨，很高兴在这里遇见你'}">嗨，很高兴在这里遇见你</p>
+                <h2><span th:text="${author.spec.displayName}">作者</span><span class="badge-admin" th:text="${theme.config.about.about_badge ?: '站主'}">站主</span></h2>
+                <p class="counter">累计写下 <strong th:text="${posts.total}">0</strong> 篇文章 · 感谢每一次相遇</p>
+                <p class="author-bio" th:if="${bioOn and !#strings.isEmpty(bioText)}" th:text="${bioText}">自我介绍</p>
+              </div>
+            </section>
+
+            <section class="panel hero-calendar" th:if="${calOn}" data-reveal>
+              <div class="panel-title"><span><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg> 创作日历</span><span>近一年 <strong data-contribution-total>0</strong> 篇</span></div>
+              <div class="heat-months" data-heat-months aria-hidden="true"></div>
+              <div class="heatmap-wrap"><div class="heatmap" data-heatmap role="img" aria-label="文章发布贡献热力图"></div></div>
+              <div class="heat-legend"><span>少</span><span class="heat-cell"></span><span class="heat-cell l1"></span><span class="heat-cell l2"></span><span class="heat-cell l3"></span><span class="heat-cell l4"></span><span>多</span></div>
+              <span class="sr-only" th:each="p : ${postFinder.listAll()}" th:attr="data-contribution-date=${#temporals.format(p.spec.publishTime, 'yyyy-MM-dd')}"></span>
+            </section>
+          </div>
+
+          <div class="contribution-card" th:if="${mbtiOn or calOn}" th:classappend="${mbtiOn and calOn} ? '' : 'is-solo'">
+            <section class="panel activity-panel" th:if="${calOn}" data-activity-panel data-reveal>
+              <div class="panel-title"><span><svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg> 最近动态</span><span>最新 <strong data-activity-count th:text="${activityCount}">5</strong> 条</span></div>
+              <ul class="activity-list">
+                <li th:each="p, state : ${posts.items}" th:if="${state.index < activityCount}">
+                  <span class="act-meta"><time th:text="${#temporals.format(p.spec.publishTime, 'yyyy-MM-dd')}">2026-01-01</time><span class="kind">发布了文章</span></span>
+                  <a th:href="@{${p.status.permalink}}" th:text="${p.spec.title}">文章标题</a>
+                </li>
+              </ul>
+              <p class="links-empty" th:if="${#lists.isEmpty(posts.items)}">还没有动态</p>
+            </section>
+
+            <section class="mbti-card" th:if="${mbtiOn}" data-mbti-card data-reveal
+                     th:with="mbtiCustom=${theme.config.about.mbti_custom == true}"
+                     th:attr="data-mbti=${mbtiType}, data-mbti-custom=${theme.config.about.mbti_custom == true}, data-alias=${theme.config.about.mbti_alias}, data-desc=${theme.config.about.mbti_desc}">
+              <p class="mbti-eyebrow">PERSONALITY · MBTI</p>
+              <p class="mbti-type" th:text="|${mbtiType}-${mbtiIdentity}|">INFP-T</p>
+              <p class="mbti-alias" data-mbti-alias-row th:hidden="${mbtiCustom and #strings.isEmpty(theme.config.about.mbti_alias)}"><span data-mbti-alias th:text="${mbtiCustom ? theme.config.about.mbti_alias : ''}">调停者</span></p>
+              <ul class="mbti-traits">
+                <li class="mbti-trait" th:classappend="${#strings.contains(mbtiType, 'I')} ? 'is-right' : ''"
+                    th:style="|--pct:${#strings.isEmpty(theme.config.about.mbti_p_ei) ? '50' : theme.config.about.mbti_p_ei}%|">
+                  <span class="t-label" th:classappend="${#strings.contains(mbtiType, 'E')} ? 'is-on' : ''"><b>E</b> 外向</span>
+                  <span class="t-label" th:classappend="${#strings.contains(mbtiType, 'I')} ? 'is-on' : ''"><b>I</b> 内向</span>
+                  <span class="t-bar" aria-hidden="true"><i></i></span>
+                </li>
+                <li class="mbti-trait" th:classappend="${#strings.contains(mbtiType, 'N')} ? 'is-right' : ''"
+                    th:style="|--pct:${#strings.isEmpty(theme.config.about.mbti_p_sn) ? '50' : theme.config.about.mbti_p_sn}%|">
+                  <span class="t-label" th:classappend="${#strings.contains(mbtiType, 'S')} ? 'is-on' : ''"><b>S</b> 实感</span>
+                  <span class="t-label" th:classappend="${#strings.contains(mbtiType, 'N')} ? 'is-on' : ''"><b>N</b> 直觉</span>
+                  <span class="t-bar" aria-hidden="true"><i></i></span>
+                </li>
+                <li class="mbti-trait" th:classappend="${#strings.contains(mbtiType, 'F')} ? 'is-right' : ''"
+                    th:style="|--pct:${#strings.isEmpty(theme.config.about.mbti_p_tf) ? '50' : theme.config.about.mbti_p_tf}%|">
+                  <span class="t-label" th:classappend="${#strings.contains(mbtiType, 'T')} ? 'is-on' : ''"><b>T</b> 思考</span>
+                  <span class="t-label" th:classappend="${#strings.contains(mbtiType, 'F')} ? 'is-on' : ''"><b>F</b> 情感</span>
+                  <span class="t-bar" aria-hidden="true"><i></i></span>
+                </li>
+                <li class="mbti-trait" th:classappend="${#strings.contains(mbtiType, 'P')} ? 'is-right' : ''"
+                    th:style="|--pct:${#strings.isEmpty(theme.config.about.mbti_p_jp) ? '50' : theme.config.about.mbti_p_jp}%|">
+                  <span class="t-label" th:classappend="${#strings.contains(mbtiType, 'J')} ? 'is-on' : ''"><b>J</b> 判断</span>
+                  <span class="t-label" th:classappend="${#strings.contains(mbtiType, 'P')} ? 'is-on' : ''"><b>P</b> 知觉</span>
+                  <span class="t-bar" aria-hidden="true"><i></i></span>
+                </li>
+                <li class="mbti-trait" th:classappend="${mbtiIdentity == 'T'} ? 'is-right' : ''"
+                    th:style="|--pct:${#strings.isEmpty(theme.config.about.mbti_p_at) ? '50' : theme.config.about.mbti_p_at}%|">
+                  <span class="t-label" th:classappend="${mbtiIdentity == 'A'} ? 'is-on' : ''"><b>A</b> 自信果断</span>
+                  <span class="t-label" th:classappend="${mbtiIdentity == 'T'} ? 'is-on' : ''"><b>T</b> 情绪易波动</span>
+                  <span class="t-bar" aria-hidden="true"><i></i></span>
+                </li>
+              </ul>
+              <p class="mbti-desc" data-mbti-desc th:hidden="${mbtiCustom and #strings.isEmpty(theme.config.about.mbti_desc)}" th:text="${mbtiCustom ? theme.config.about.mbti_desc : ''}">理想主义、共情力强，喜欢在文字里寻找意义。</p>
+            </section>
+          </div>
+
+          <div class="section-bar">
+            <h2 class="section-title">全部文章</h2>
+            <span class="section-hint" th:text="|共 ${posts.total} 篇|">共 0 篇</span>
+          </div>
+
+          <div class="post-grid" data-post-grid th:classappend="${(theme.config.layout.grid_columns ?: '2') == '3'} ? 'cols-3' : ''" th:attr="data-default-view=${theme.config.layout.home_layout ?: 'grid'}">
+            <article class="post-card" th:each="post : ${posts.items}" th:classappend="${post.spec.pinned} ? 'featured'" data-reveal>
+  <a class="post-cover" th:href="@{${post.status.permalink}}" th:if="${theme.config.layout.show_cover != false}"
+     th:classappend="${#strings.isEmpty(post.spec.cover)} ? 'is-empty' : ''"
+     th:attr="aria-label=${post.spec.title}, data-glyph=${#strings.isEmpty(post.spec.cover) ? #strings.substring(post.spec.title, 0, 1) : ''}">
+    <img th:if="${not #strings.isEmpty(post.spec.cover)}" th:src="${post.spec.cover}" th:alt="${post.spec.title}" loading="lazy" decoding="async" />
+    <span class="cover-badge" th:if="${not #lists.isEmpty(post.categories)}" th:text="${post.categories[0].spec.displayName}">分类</span>
+  </a>
+  <div class="post-body">
+    <h2 class="post-title"><a th:href="@{${post.status.permalink}}" th:text="${post.spec.title}">文章标题</a></h2>
+    <p class="post-excerpt" th:if="${theme.config.layout.show_excerpt != false and not #strings.isEmpty(post.status.excerpt)}" th:text="${post.status.excerpt}">文章摘要</p>
+    <div class="post-meta" th:if="${theme.config.layout.show_post_meta != false}">
+      <span><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg><time th:datetime="${post.spec.publishTime}" th:text="${#temporals.format(post.spec.publishTime, 'yyyy-MM-dd')}">2026-01-01</time></span>
+      <span th:if="${not #lists.isEmpty(post.categories)}"><svg class="icon" aria-hidden="true"><use href="#i-folder"></use></svg><a th:href="@{${post.categories[0].status.permalink}}" th:text="${post.categories[0].spec.displayName}">分类</a></span>
+      <span><svg class="icon" aria-hidden="true"><use href="#i-eye"></use></svg><span th:text="${post.stats.visit}">0</span></span>
+      <span><svg class="icon" aria-hidden="true"><use href="#i-message"></use></svg><span th:text="${post.stats.comment}">0</span></span>
+    </div>
+    <div class="post-tags" th:if="${not #lists.isEmpty(post.tags)}">
+      <a class="chip" th:each="tag, state : ${post.tags}" th:if="${state.index < 2}" th:href="@{${tag.status.permalink}}" th:text="|# ${tag.spec.displayName}|"># 标签</a>
+    </div>
+  </div>
+</article>
+
+          </div>
+
+          <div class="empty-state" th:if="${#lists.isEmpty(posts.items)}">
+            <svg class="icon" aria-hidden="true"><use href="#i-book"></use></svg>
+            <p>这位作者还没有发布文章。</p>
+          </div>
+
+          <nav class="pagination" th:if="${posts.hasPrevious() || posts.hasNext()}" aria-label="分页导航">
+  <a th:if="${posts.hasPrevious()}" th:href="@{${posts.prevUrl}}">
+    <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"></use></svg>上一页
+  </a>
+  <span class="page-num" th:text="|${posts.page} / ${posts.totalPages}|">1 / 1</span>
+  <a th:if="${posts.hasNext()}" th:href="@{${posts.nextUrl}}">
+    下一页<svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg>
+  </a>
+</nav>
+
+        </div>
+      </div>
+    </div>
+  </th:block>
+</html>

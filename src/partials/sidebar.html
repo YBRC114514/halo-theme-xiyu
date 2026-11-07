@@ -1,0 +1,69 @@
+<aside class="sidebar" aria-label="侧边栏" th:if="${theme.config.layout.show_sidebar != false}">
+  <section class="widget profile-card" aria-label="站点名片" th:with="avatarImg = ${theme.config.basic.avatar ?: site.logo}, coverImg = ${theme.config.basic.profile_cover}">
+    <div class="profile-cover">
+      <img th:if="${not #strings.isEmpty(coverImg)}" th:src="${coverImg}" alt="" aria-hidden="true" />
+      <span class="profile-cover-pattern" th:unless="${not #strings.isEmpty(coverImg)}" aria-hidden="true"></span>
+    </div>
+    <div class="profile-body">
+      <div class="profile-avatar-wrap">
+        <img class="profile-avatar" th:if="${not #strings.isEmpty(avatarImg)}" th:src="${avatarImg}" th:alt="${site.title}" />
+        <span class="profile-avatar-fallback" th:unless="${not #strings.isEmpty(avatarImg)}" th:text="${#strings.isEmpty(site.title) ? '青' : #strings.substring(site.title, 0, 1)}">青</span>
+      </div>
+      <h2 class="profile-name" th:text="${theme.config.basic.profile_name ?: site.title}">站点标题</h2>
+      <p class="profile-bio" th:text="${theme.config.basic.intro ?: site.subtitle}">个人简介</p>
+      <div class="profile-actions" th:if="${theme.config.basic.show_profile_buttons != false}"
+           th:with="btn1Mode=${theme.config.basic.profile_btn1_mode ?: 'login'}, btn2Icon=${#strings.isEmpty(theme.config.basic.profile_btn2_icon) ? 'rss' : theme.config.basic.profile_btn2_icon}">
+        <a th:if="${btn1Mode == 'login'}" class="profile-btn primary" data-auth-profile th:href="@{${theme.config.basic.profile_btn1_url ?: '/login'}}"
+           th:attr="data-auth-login-href=@{${theme.config.basic.profile_btn1_url ?: '/login'}}, data-auth-login-text=${theme.config.basic.profile_btn1_text ?: '登录'}, data-auth-user-href=@{/uc}, data-auth-user-text=${'个人中心'}"><svg class="icon" aria-hidden="true"><use href="#i-user"></use></svg><span data-auth-label th:text="${theme.config.basic.profile_btn1_text ?: '登录'}">登录</span></a>
+        <a th:unless="${btn1Mode == 'login'}" class="profile-btn primary" th:href="@{${theme.config.basic.profile_btn1_url ?: '/uc'}}"><svg class="icon" aria-hidden="true"><use href="#i-user"></use></svg><span th:text="${theme.config.basic.profile_btn1_text ?: '登录'}">登录</span></a>
+        <a class="profile-btn" th:href="@{${theme.config.basic.profile_btn2_url ?: '/rss.xml'}}"><svg class="icon" aria-hidden="true"><use th:attr="href=${'#i-' + btn2Icon}"></use></svg><span th:text="${theme.config.basic.profile_btn2_text ?: '订阅'}">订阅</span></a>
+      </div>
+      <div class="profile-social" th:if="${(theme.config.basic.show_github_link != false and !#strings.isEmpty(theme.config.basic.github_url)) or (theme.config.basic.show_email_link != false and !#strings.isEmpty(theme.config.basic.email))}">
+        <a th:if="${theme.config.basic.show_github_link != false and !#strings.isEmpty(theme.config.basic.github_url)}" th:href="${theme.config.basic.github_url}" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><svg class="icon" aria-hidden="true"><use href="#i-github"></use></svg></a>
+        <a th:if="${theme.config.basic.show_email_link != false and !#strings.isEmpty(theme.config.basic.email)}" th:href="|mailto:${theme.config.basic.email}|" aria-label="邮箱"><svg class="icon" aria-hidden="true"><use href="#i-mail"></use></svg></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="widget" th:with="cats = ${categoryFinder.listAll()}">
+    <h2 class="widget-title"><svg class="icon" aria-hidden="true"><use href="#i-folder"></use></svg>文章分类</h2>
+    <ul class="widget-list" th:if="${not #lists.isEmpty(cats)}">
+      <li th:each="cat, state : ${cats}" th:if="${state.index < 8}">
+        <a th:href="@{${cat.status.permalink}}">
+          <span class="item-text" th:text="${cat.spec.displayName}">分类</span>
+          <span class="count" th:text="${cat.postCount}">0</span>
+        </a>
+      </li>
+    </ul>
+    <p class="links-empty" th:unless="${not #lists.isEmpty(cats)}">暂无分类</p>
+  </section>
+
+  <section class="widget" th:with="allTags = ${tagFinder.listAll()}">
+    <h2 class="widget-title"><svg class="icon" aria-hidden="true"><use href="#i-tag"></use></svg>标签云</h2>
+    <div class="tag-cloud" th:if="${not #lists.isEmpty(allTags)}">
+      <a class="chip" th:each="tag, state : ${allTags}" th:if="${state.index < 18}" th:href="@{${tag.status.permalink}}" th:text="${tag.spec.displayName}">标签</a>
+    </div>
+    <p class="links-empty" th:unless="${not #lists.isEmpty(allTags)}">暂无标签</p>
+  </section>
+
+  <section class="widget" th:with="recent = ${postFinder.list(1, 5)}">
+    <h2 class="widget-title"><svg class="icon" aria-hidden="true"><use href="#i-sparkles"></use></svg>最新文章</h2>
+    <div th:each="item : ${recent.items}" class="recent-item">
+      <img class="recent-thumb" th:if="${not #strings.isEmpty(item.spec.cover)}" th:src="${item.spec.cover}" th:alt="${item.spec.title}" loading="lazy" />
+      <span class="recent-thumb-fallback" th:unless="${not #strings.isEmpty(item.spec.cover)}" th:text="${#strings.substring(item.spec.title, 0, 1)}">文</span>
+      <div>
+        <a th:href="@{${item.status.permalink}}" th:text="${item.spec.title}">文章标题</a>
+        <time th:text="${#temporals.format(item.spec.publishTime, 'yyyy-MM-dd')}">2026-01-01</time>
+      </div>
+    </div>
+  </section>
+
+  <section class="widget" th:with="stat = ${postFinder.list(1, 1)}, catCount = ${#lists.size(categoryFinder.listAll())}, tagCount = ${#lists.size(tagFinder.listAll())}">
+    <h2 class="widget-title"><svg class="icon" aria-hidden="true"><use href="#i-book"></use></svg>站点统计</h2>
+    <div class="stat-grid">
+      <div><strong th:text="${stat.total}">0</strong><span>文章</span></div>
+      <div><strong th:text="${catCount}">0</strong><span>分类</span></div>
+      <div><strong th:text="${tagCount}">0</strong><span>标签</span></div>
+    </div>
+  </section>
+</aside>

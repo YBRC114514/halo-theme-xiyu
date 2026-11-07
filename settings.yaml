@@ -1,0 +1,818 @@
+apiVersion: v1alpha1
+kind: Setting
+metadata:
+  name: theme-xiyu-setting
+spec:
+  forms:
+    # ------------------------------------------------------------------
+    # 1. 首屏 —— 访客第一眼看到的内容，按「标题 → 副标题 → 背景 → 高度 → 标识」排列
+    # ------------------------------------------------------------------
+    - group: home
+      label: 首屏 Banner
+      formSchema:
+        - $formkit: text
+          name: hero_title
+          label: 首屏主标题
+          help: 留空使用系统站点标题
+          value: ""
+        - $formkit: radio
+          name: hero_title_type
+          label: 标题形式
+          help: 选「图片」后可上传一张透明 PNG 作标题字，适合书法或艺术字
+          value: text
+          options:
+            - label: 文字
+              value: text
+            - label: 图片
+              value: image
+        - $formkit: attachment
+          name: hero_title_image
+          label: 标题图片
+          help: 建议透明背景 PNG，高 120～200px；仅在标题形式为「图片」时生效
+          width: 12rem
+          value: ""
+        - $formkit: text
+          name: hero_subtitle
+          label: 首屏副标题
+          help: 留空则使用系统设置中的站点副标题
+          value: ""
+        - $formkit: switch
+          name: hero_show_subtitle
+          label: 显示首屏副标题
+          help: 关闭后首屏只保留标题，副标题位置留空
+          value: true
+        - $formkit: attachment
+          name: hero_image
+          label: 首屏背景图
+          width: 12rem
+          aspectRatio: 16/9
+          accepts:
+            - "image/png"
+            - "image/jpeg"
+            - "image/webp"
+          value: ""
+        - $formkit: select
+          name: hero_blur
+          label: 背景模糊度
+          help: 只虚化首屏背景图与色层，标题与按钮保持清晰
+          value: "2"
+          options:
+            - label: 不模糊
+              value: "0"
+            - label: 轻微 · 2px
+              value: "2"
+            - label: 柔和 · 5px
+              value: "5"
+            - label: 较强 · 10px
+              value: "10"
+            - label: 强 · 16px
+              value: "16"
+        - $formkit: radio
+          name: hero_height
+          label: 首屏高度预设
+          value: normal
+          options:
+            - label: 紧凑
+              value: compact
+            - label: 标准
+              value: normal
+            - label: 舒展
+              value: tall
+        - $formkit: text
+          name: hero_custom_height
+          label: 自定义高度
+          help: 留空则使用上面的高度预设；可填 520px、60vh、32rem 等。全屏铺满开启时此项不生效
+          value: ""
+        - $formkit: switch
+          name: hero_fullscreen
+          label: 全屏铺满
+          help: 开启后 Banner 占满一屏高度，导航栏悬浮在图片之上
+          value: false
+        - $formkit: switch
+          name: show_hero_actions
+          label: 显示首屏按钮组
+          help: 默认关闭，首屏只保留标题信息
+          value: false
+        - $formkit: text
+          name: brand_title
+          label: 左上角标识文字
+          help: 留空则跟随首屏主标题
+          value: ""
+        - $formkit: attachment
+          name: brand_logo
+          label: 左上角标识图片
+          width: 6rem
+          value: ""
+
+    # ------------------------------------------------------------------
+    # 2. 资料卡与站点 —— 侧栏个人卡片 + 页脚署名
+    # ------------------------------------------------------------------
+    - group: basic
+      label: 资料卡与站点
+      formSchema:
+        - $formkit: attachment
+          name: avatar
+          label: 侧栏头像
+          width: 6rem
+          value: ""
+        - $formkit: attachment
+          name: profile_cover
+          label: 资料卡封面图
+          width: 12rem
+          aspectRatio: 16/9
+          accepts:
+            - "image/png"
+            - "image/jpeg"
+            - "image/webp"
+          value: ""
+        - $formkit: text
+          name: profile_name
+          label: 资料卡名称
+          help: 留空则使用系统站点标题
+          value: ""
+        - $formkit: textarea
+          name: intro
+          label: 个人简介
+          value: "记录技术、生活与一些细碎的想法。"
+        - $formkit: switch
+          name: show_profile_buttons
+          label: 显示资料卡按钮
+          help: 关闭后资料卡只保留头像、名称与简介
+          value: true
+        - $formkit: radio
+          name: profile_btn1_mode
+          label: 按钮一 · 作用
+          help: 选「登录入口」会读取当前登录态自动切换文案；选「自定义链接」则固定使用下方文字与地址
+          value: login
+          options:
+            - label: 登录入口
+              value: login
+            - label: 自定义链接
+              value: custom
+        - $formkit: text
+          name: profile_btn1_text
+          label: 按钮一 · 文字
+          help: 未登录时显示为「登录」，已登录会自动变成「个人中心」；自定义链接时为固定文案
+          value: "登录"
+        - $formkit: text
+          name: profile_btn1_url
+          label: 按钮一 · 地址
+          help: 仅在「自定义链接」模式生效，留空跳转个人中心
+          value: "/login"
+        - $formkit: text
+          name: profile_btn2_text
+          label: 按钮二 · 文字
+          value: "订阅"
+        - $formkit: text
+          name: profile_btn2_url
+          label: 按钮二 · 地址
+          value: "/rss.xml"
+        - $formkit: select
+          name: profile_btn2_icon
+          label: 按钮二 · 图标
+          help: 显示在按钮文字前的图标
+          value: "rss"
+          options:
+            - label: RSS 订阅
+              value: "rss"
+            - label: 邮件
+              value: "mail"
+            - label: 链接
+              value: "link"
+            - label: GitHub
+              value: "github"
+            - label: 留言
+              value: "message"
+            - label: 书籍
+              value: "book"
+            - label: 日历
+              value: "calendar"
+            - label: 星光
+              value: "sparkles"
+            - label: 标签
+              value: "tag"
+            - label: 文件夹
+              value: "folder"
+            - label: 用户
+              value: "user"
+            - label: 外链
+              value: "external"
+        - $formkit: text
+          name: site_start_date
+          label: 建站日期
+          help: 格式 YYYY-MM-DD，留空则按最早一篇文章计算运行天数
+          value: ""
+        - $formkit: switch
+          name: show_github_link
+          label: 显示 GitHub 按钮
+          help: 需同时填写下方 GitHub 链接才会出现
+          value: true
+        - $formkit: text
+          name: github_url
+          label: GitHub 链接
+          value: ""
+        - $formkit: switch
+          name: show_email_link
+          label: 显示邮箱按钮
+          help: 需同时填写下方邮箱地址才会出现
+          value: true
+        - $formkit: text
+          name: email
+          label: 邮箱地址
+          value: ""
+        - $formkit: text
+          name: footer_note
+          label: 页脚署名
+          help: 留空则显示站点标题
+          value: ""
+        - $formkit: text
+          name: beian
+          label: 备案号
+          value: ""
+
+    # ------------------------------------------------------------------
+    # 3. 登录与注册页 —— 主题自带的网关页外观，可整体关闭回退内核页面
+    # ------------------------------------------------------------------
+    - group: gateway
+      label: 登录与注册页
+      formSchema:
+        - $formkit: switch
+          name: gateway_enabled
+          label: 启用主题登录页
+          help: 关闭后登录页与注册页回退为 Halo 内置样式，本页其余设置全部不生效
+          value: true
+        - $formkit: text
+          name: gateway_title
+          label: 登录页主标题
+          help: 留空使用站点标题；注册页始终显示「创建账号」
+          value: ""
+        - $formkit: text
+          name: gateway_subtitle
+          label: 登录页副标题
+          help: 显示在标题下方，留空使用系统站点副标题
+          value: ""
+        - $formkit: attachment
+          name: gateway_logo
+          label: 登录页图标
+          help: 显示在卡片顶部，建议正方形；留空依次回退到左上角标识、站点 Logo
+          width: 6rem
+          value: ""
+        - $formkit: radio
+          name: gateway_logo_shape
+          label: 图标外框
+          help: 圆角方形、圆形或直角，对上传的图标与文字标识同时生效
+          value: rounded
+          options:
+            - label: 圆角
+              value: rounded
+            - label: 圆形
+              value: circle
+            - label: 直角
+              value: square
+        - $formkit: attachment
+          name: gateway_bg_image
+          label: 登录页背景图
+          help: 留空使用主题的青绿渐变 + 光斑背景
+          width: 12rem
+          aspectRatio: 16/9
+          accepts:
+            - "image/png"
+            - "image/jpeg"
+            - "image/webp"
+          value: ""
+        - $formkit: select
+          name: gateway_bg_blur
+          label: 背景图模糊度
+          help: 只虚化背景图，卡片与文字保持清晰
+          value: "0"
+          options:
+            - label: 不模糊
+              value: "0"
+            - label: 轻微 · 4px
+              value: "4"
+            - label: 柔和 · 8px
+              value: "8"
+            - label: 较强 · 16px
+              value: "16"
+            - label: 强 · 24px
+              value: "24"
+        - $formkit: select
+          name: gateway_bg_dim
+          label: 背景图压暗
+          help: 图片较亮时压暗一些，让白色卡片更突出
+          value: "0.2"
+          options:
+            - label: 不压暗
+              value: "0"
+            - label: 轻微 · 20%
+              value: "0.2"
+            - label: 适中 · 35%
+              value: "0.35"
+            - label: 偏深 · 50%
+              value: "0.5"
+        - $formkit: radio
+          name: gateway_bg_position
+          label: 背景图对齐
+          value: center
+          options:
+            - label: 居中
+              value: center
+            - label: 顶部
+              value: top
+            - label: 底部
+              value: bottom
+
+    # ------------------------------------------------------------------
+    # 4. 页脚与朋友圈
+    # ------------------------------------------------------------------
+    - group: footer
+      label: 页脚与版权
+      formSchema:
+        - $formkit: switch
+          name: show_footer_stats
+          label: 显示运行天数与统计
+          value: true
+        - $formkit: text
+          name: copyright_start
+          label: 版权起始年
+          help: 显示为「© 起始年 — 当前年」。留空自动取「建站日期」的年份；两处都为空时只显示当前年
+          value: ""
+        - $formkit: text
+          name: copyright_name
+          label: 版权署名
+          help: 版权行里 By 后面的名字，留空依次回退到「资料卡与站点」的页脚署名、站点标题
+          value: ""
+        - $formkit: select
+          name: copyright_type
+          label: 版权类型
+          help: CC 协议会自动链接到对应的中文协议说明页
+          value: "reserved"
+          options:
+            - label: 保留所有权利
+              value: "reserved"
+            - label: CC BY 4.0（署名）
+              value: "cc-by"
+            - label: CC BY-SA 4.0（署名-相同方式共享）
+              value: "cc-by-sa"
+            - label: CC BY-NC 4.0（署名-非商业性使用）
+              value: "cc-by-nc"
+            - label: CC BY-NC-SA 4.0（署名-非商业性使用-相同方式共享）
+              value: "cc-by-nc-sa"
+            - label: CC BY-ND 4.0（署名-禁止演绎）
+              value: "cc-by-nd"
+            - label: CC BY-NC-ND 4.0（署名-非商业性使用-禁止演绎）
+              value: "cc-by-nc-nd"
+            - label: CC0 1.0（公共领域贡献）
+              value: "cc0"
+            - label: 自定义
+              value: "custom"
+            - label: 不显示
+              value: "none"
+        - $formkit: text
+          name: copyright_custom
+          label: 版权类型 · 自定义文案
+          help: 仅在版权类型选「自定义」时生效
+          value: ""
+        - $formkit: text
+          name: copyright_url
+          label: 版权类型 · 自定义链接
+          help: 可留空；填写后自定义文案会变成可点击链接
+          value: ""
+        - $formkit: radio
+          name: copyright_align
+          label: 版权位置
+          help: 版权行放在页脚底部左侧、居中还是右侧；备案号会自动排到另一端
+          value: "right"
+          options:
+            - label: 左侧
+              value: "left"
+            - label: 居中
+              value: "center"
+            - label: 右侧
+              value: "right"
+        - $formkit: textarea
+          name: friends_desc
+          label: 朋友圈页面说明
+          value: "朋友们的近况与最近更新，按订阅聚合在这里。"
+
+    # ------------------------------------------------------------------
+    # 5. 外观配色
+    # ------------------------------------------------------------------
+    - group: style
+      label: 外观配色
+      formSchema:
+        - $formkit: radio
+          name: color_scheme
+          label: 默认配色
+          value: system
+          options:
+            - label: 跟随系统
+              value: system
+            - label: 浅色
+              value: light
+            - label: 深色
+              value: dark
+        - $formkit: color
+          name: accent_light
+          label: 浅色模式强调色
+          format: hex
+          value: "#1158d1"
+        - $formkit: color
+          name: accent_dark
+          label: 深色模式强调色
+          format: hex
+          value: "#008fec"
+        - $formkit: radio
+          name: radius
+          label: 圆角风格
+          value: soft
+          options:
+            - label: 方正
+              value: sharp
+            - label: 柔和
+              value: soft
+            - label: 圆润
+              value: round
+        - $formkit: radio
+          name: font_scale
+          label: 正文字号
+          value: normal
+          options:
+            - label: 偏小
+              value: small
+            - label: 标准
+              value: normal
+            - label: 偏大
+              value: large
+
+    # ------------------------------------------------------------------
+    # 6. 布局
+    # ------------------------------------------------------------------
+    - group: layout
+      label: 布局
+      formSchema:
+        - $formkit: switch
+          name: show_sidebar
+          label: 显示侧边栏
+          value: true
+        - $formkit: radio
+          name: sidebar_position
+          label: 侧边栏位置
+          value: right
+          options:
+            - label: 右侧
+              value: right
+            - label: 左侧
+              value: left
+        - $formkit: radio
+          name: home_layout
+          label: 首页文章布局
+          value: grid
+          options:
+            - label: 卡片网格
+              value: grid
+            - label: 图文列表
+              value: list
+        - $formkit: radio
+          name: grid_columns
+          label: 网格列数（桌面）
+          value: "2"
+          options:
+            - label: 两列
+              value: "2"
+            - label: 三列
+              value: "3"
+        - $formkit: radio
+          name: card_density
+          label: 文章卡片尺寸
+          value: compact
+          options:
+            - label: 紧凑（推荐）
+              value: compact
+            - label: 标准
+              value: roomy
+        - $formkit: select
+          name: posts_per_page
+          label: 首页每页文章数
+          help: 只影响首页列表；分类、标签、归档与作者页仍沿用 Halo 系统设置
+          value: "10"
+          options:
+            - label: 6 篇
+              value: "6"
+            - label: 8 篇
+              value: "8"
+            - label: 9 篇（三列正好三行）
+              value: "9"
+            - label: 10 篇
+              value: "10"
+            - label: 12 篇
+              value: "12"
+            - label: 15 篇
+              value: "15"
+            - label: 18 篇
+              value: "18"
+            - label: 24 篇
+              value: "24"
+        - $formkit: switch
+          name: show_cover
+          label: 显示文章封面
+          value: true
+        - $formkit: switch
+          name: show_excerpt
+          label: 显示文章摘要
+          value: true
+        - $formkit: switch
+          name: show_post_meta
+          label: 显示文章元信息
+          value: true
+        - $formkit: switch
+          name: show_view_switch
+          label: 显示网格/列表切换按钮
+          value: true
+
+    # ------------------------------------------------------------------
+    # 7. 功能
+    # ------------------------------------------------------------------
+    - group: features
+      label: 功能
+      formSchema:
+        - $formkit: switch
+          name: show_toc
+          label: 文章页显示目录
+          value: true
+        - $formkit: switch
+          name: show_progress
+          label: 显示阅读进度条
+          value: true
+        - $formkit: switch
+          name: show_code_copy
+          label: 代码块复制按钮
+          value: true
+        - $formkit: switch
+          name: show_summary_card
+          label: 显示主题自带摘要卡
+          help: 若已安装 AI 摘要类插件并出现两个摘要框，可关闭此项
+          value: true
+        - $formkit: switch
+          name: summary_typing
+          label: 摘要逐字出现
+          help: 进入文章时摘要文字一个字一个字浮现；关闭后直接整段显示
+          value: true
+        - $formkit: select
+          name: summary_typing_speed
+          label: 摘要出现速度
+          help: 数值越大越慢；开启「减少动态效果」的系统会自动跳过动画
+          value: "16"
+          options:
+            - label: 极快（每字 8ms）
+              value: "8"
+            - label: 较快（每字 16ms）
+              value: "16"
+            - label: 适中（每字 28ms）
+              value: "28"
+            - label: 较慢（每字 45ms）
+              value: "45"
+        - $formkit: switch
+          name: show_reveal
+          label: 滚动淡入动画
+          value: true
+        - $formkit: switch
+          name: show_backtop
+          label: 显示回到顶部
+          value: true
+        - $formkit: radio
+          name: backtop_mode
+          label: 浮动按钮行为
+          help: 选「返回文章列表」后，首页的浮动按钮会直接滑到文章列表（跳过首屏 Banner）；其他页面一律回到顶部
+          value: "top"
+          options:
+            - label: 返回顶部
+              value: "top"
+            - label: 返回文章列表（仅首页）
+              value: "list"
+        - $formkit: switch
+          name: show_search
+          label: 显示搜索入口（需安装官方搜索组件插件）
+          value: true
+        - $formkit: text
+          name: search_fallback_url
+          label: 搜索回退地址
+          help: 未安装官方搜索组件插件时，搜索按钮跳转的页面（如 /search）。留空则隐藏搜索入口
+          value: ""
+
+    # ------------------------------------------------------------------
+    # 8. 作者页
+    # ------------------------------------------------------------------
+    - group: about
+      label: 作者页
+      formSchema:
+        - $formkit: text
+          name: greeting
+          label: 问候语
+          value: "嗨，很高兴在这里遇见你"
+        - $formkit: text
+          name: about_badge
+          label: 身份标签
+          value: "站主"
+        - $formkit: switch
+          name: show_bio
+          label: 显示自我介绍
+          help: 关闭后资料卡只保留头像、昵称与累计文章数
+          value: true
+        - $formkit: textarea
+          name: bio_text
+          label: 自我介绍
+          help: 显示在资料卡的问候语下方，支持换行；留空则使用后台用户资料中的「个人简介」
+          rows: 4
+          value: ""
+        - $formkit: switch
+          name: show_contribution
+          label: 显示创作日历与最近动态
+          value: true
+        - $formkit: select
+          name: activity_count
+          label: 最近动态最多显示几条
+          help: 条数会跟随 MBTI 卡片的高度自动适配，放不下时自动少显示
+          value: "4"
+          options:
+            - label: 3 条
+              value: "3"
+            - label: 4 条
+              value: "4"
+            - label: 5 条
+              value: "5"
+            - label: 6 条
+              value: "6"
+            - label: 8 条
+              value: "8"
+            - label: 10 条
+              value: "10"
+        - $formkit: switch
+          name: show_mbti
+          label: 显示 MBTI 卡片
+          help: 关闭后资料卡会自动占满整行
+          value: true
+        - $formkit: select
+          name: mbti_type
+          label: MBTI 类型
+          help: 选好类型后，卡片会自动使用该类型的官方别名与简述，四个维度也会自动高亮
+          value: "INFP"
+          options:
+            - label: INFP · 调停者
+              value: "INFP"
+            - label: INFJ · 提倡者
+              value: "INFJ"
+            - label: INTP · 逻辑学家
+              value: "INTP"
+            - label: INTJ · 建筑师
+              value: "INTJ"
+            - label: ENFP · 竞选者
+              value: "ENFP"
+            - label: ENFJ · 主人公
+              value: "ENFJ"
+            - label: ENTP · 辩论家
+              value: "ENTP"
+            - label: ENTJ · 指挥官
+              value: "ENTJ"
+            - label: ISFP · 探险家
+              value: "ISFP"
+            - label: ISFJ · 守卫者
+              value: "ISFJ"
+            - label: ISTP · 鉴赏家
+              value: "ISTP"
+            - label: ISTJ · 物流师
+              value: "ISTJ"
+            - label: ESFP · 表演者
+              value: "ESFP"
+            - label: ESFJ · 执政官
+              value: "ESFJ"
+            - label: ESTP · 企业家
+              value: "ESTP"
+            - label: ESTJ · 总经理
+              value: "ESTJ"
+        - $formkit: switch
+          name: mbti_custom
+          label: 自定义文案
+          help: 关闭时按所选类型自动使用官方别名与简述；开启后改用下方自定义内容
+          value: false
+        - $formkit: text
+          name: mbti_alias
+          label: 类型别名
+          help: 仅在「自定义文案」开启时生效；留空则只显示四个字母
+          value: "调停者"
+        - $formkit: text
+          name: mbti_p_ei
+          label: 维度条 · 内外向
+          help: 类型偏向那一侧的占比（0–100），如 62 表示 62% / 38%；留空按 50 处理
+          value: "62"
+        - $formkit: text
+          name: mbti_p_sn
+          label: 维度条 · 实感直觉
+          value: "71"
+        - $formkit: text
+          name: mbti_p_tf
+          label: 维度条 · 思考情感
+          value: "68"
+        - $formkit: text
+          name: mbti_p_jp
+          label: 维度条 · 判断知觉
+          value: "55"
+        - $formkit: radio
+          name: mbti_identity
+          label: 你是什么人
+          help: A 是自信果断、T 是情绪易波动；写在类型后缀上（如 INFP-T），同时驱动第 5 条维度
+          value: T
+          options:
+            - label: 自信果断（A）
+              value: A
+            - label: 情绪易波动（T）
+              value: T
+        - $formkit: text
+          name: mbti_p_at
+          label: 维度条 · 自我认同
+          help: 自信果断一侧的占比（0–100），留空按 50 处理
+          value: "71"
+        - $formkit: textarea
+          name: mbti_desc
+          label: 类型简述
+          help: 仅在「自定义文案」开启时生效；关闭时使用所选类型的官方简述
+          value: "理想主义、共情力强，喜欢在文字里寻找意义。"
+
+    # ------------------------------------------------------------------
+    # 9. 友链页
+    # ------------------------------------------------------------------
+    - group: links
+      label: 友链页
+      formSchema:
+        - $formkit: text
+          name: apply_url
+          label: 友链申请备用地址
+          help: 官方链接插件开启「启用友链申请」后，按钮会直接打开内置申请表单（含验证码）；此处仅在未开启时作为跳转地址
+          value: ""
+        - $formkit: switch
+          name: show_random
+          label: 显示「随机访问」按钮
+          value: true
+        - $formkit: text
+          name: intro_title
+          label: 上半区标题
+          value: "一起把小岛连成群岛"
+        - $formkit: textarea
+          name: intro_desc
+          label: 上半区说明
+          value: "如果你的站点也在认真记录点什么，欢迎按下方规则申请互换链接。"
+        - $formkit: text
+          name: site_name
+          label: 站点信息 · 名称
+          help: 留空使用系统站点标题
+          value: ""
+        - $formkit: text
+          name: site_url
+          label: 站点信息 · 网址
+          help: 留空使用系统设置的站点地址
+          value: ""
+        - $formkit: textarea
+          name: site_description
+          label: 站点信息 · 简介
+          help: 留空使用系统站点副标题
+          value: ""
+        - $formkit: text
+          name: site_email
+          label: 站点信息 · 邮箱
+          help: 留空则沿用「资料卡与站点」中填写的邮箱；两处都留空时不显示这一行
+          value: ""
+        - $formkit: text
+          name: site_rss
+          label: 站点信息 · RSS
+          help: 留空使用「站点地址 + /rss.xml」
+          value: ""
+        - $formkit: switch
+          name: show_site_rss
+          label: 显示 RSS 这一行
+          value: true
+        - $formkit: textarea
+          name: link_rules
+          label: 友链规则
+          rows: 10
+          value: |
+            1. 站点内容原创、持续更新，且不含违规内容；
+            2. 请先在贵站添加本站链接，再提交申请；
+            3. 申请时请填写站点名称、地址、简介与头像；
+            4. 审核通过后会展示在下方对应分组中。
+
+    # ------------------------------------------------------------------
+    # 10. SEO
+    # ------------------------------------------------------------------
+    - group: seo
+      label: SEO
+      formSchema:
+        - $formkit: checkbox
+          name: enable_metadata
+          label: 输出 canonical 与社交分享标签
+          help: 若已由插件提供同类标签，请关闭此项
+          value: true
+        - $formkit: checkbox
+          name: enable_structured_data
+          label: 输出文章结构化数据（JSON-LD）
+          help: 若已由插件提供同类标签，请关闭此项
+          value: true

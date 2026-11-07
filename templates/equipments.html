@@ -1,0 +1,72 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
+  <th:block th:fragment="head">
+    <title th:text="|${title} - ${site.title}|">装备 - 站点标题</title>
+    <th:block th:if="${theme.config.seo.enable_metadata != false}">
+  <link rel="canonical" th:href="${site.url + '/equipments'}" />
+  <meta property="og:type" th:content="website" />
+  <meta property="og:site_name" th:content="${site.title}" />
+  <meta property="og:title" th:content="|${title} - ${site.title}|" />
+  <meta property="og:url" th:content="${site.url + '/equipments'}" />
+  <meta property="og:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta property="og:image" th:if="${site.logo}" th:content="${site.logo}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" th:content="|${title} - ${site.title}|" />
+  <meta name="twitter:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta name="twitter:image" th:if="${site.logo}" th:content="${site.logo}" />
+</th:block>
+
+  </th:block>
+
+  <th:block th:fragment="content">
+    <div class="shell" th:with="activeGroup=${param.group == null or #lists.isEmpty(param.group) ? '' : param.group[0]}">
+      <div class="page-head">
+        <nav class="breadcrumb" aria-label="面包屑"><a th:href="@{/}">首页</a><span>/</span><span th:text="${title}">装备</span></nav>
+        <h1 th:text="${title}">装备</h1>
+        <p>日常在用的设备与物件，按分组归档。</p>
+      </div>
+
+      <div class="link-toolbar equipment-toolbar" th:if="${groups != null and not #lists.isEmpty(groups)}">
+        <a class="chip" th:classappend="${activeGroup == ''} ? 'is-active' : ''" th:href="@{/equipments}">全部</a>
+        <a class="chip" th:each="g : ${groups}"
+           th:classappend="${activeGroup == g.metadata.name} ? 'is-active' : ''"
+           th:href="@{/equipments(group=${g.metadata.name})}">
+          <span th:text="${g.spec.displayName}">分组</span>
+          <small th:if="${g.status != null and g.status.equipmentCount != null}" th:text="${g.status.equipmentCount}">0</small>
+        </a>
+      </div>
+
+      <div class="media-grid" th:if="${equipments != null and not #lists.isEmpty(equipments.items)}">
+        <article class="media-card equipment-card" th:each="item : ${equipments.items}" data-reveal>
+          <div class="media-cover" th:if="${not #strings.isEmpty(item.spec.cover)}">
+            <img th:src="${item.spec.cover}" th:alt="${item.spec.displayName}" loading="lazy" />
+          </div>
+          <div class="media-cover media-cover-fallback" th:if="${#strings.isEmpty(item.spec.cover)}">
+            <span th:text="${#strings.isEmpty(item.spec.displayName) ? '设' : #strings.substring(item.spec.displayName, 0, 1)}">设</span>
+          </div>
+          <div class="media-body">
+            <h2 class="media-title" th:text="${item.spec.displayName}">设备名称</h2>
+            <div class="media-meta" th:if="${not #strings.isEmpty(item.spec.specification)}">
+              <span th:text="${item.spec.specification}">规格</span>
+            </div>
+            <p class="media-desc" th:if="${not #strings.isEmpty(item.spec.description)}" th:text="${item.spec.description}">设备描述</p>
+            <a class="media-link" th:if="${not #strings.isEmpty(item.spec.url)}" th:href="${item.spec.url}" target="_blank" rel="noopener noreferrer">
+              查看详情<svg class="icon" aria-hidden="true"><use href="#i-external"></use></svg>
+            </a>
+          </div>
+        </article>
+      </div>
+
+      <div class="empty-state" th:if="${equipments == null or #lists.isEmpty(equipments.items)}">
+        <svg class="icon" aria-hidden="true"><use href="#i-folder"></use></svg>
+        <p th:text="${activeGroup == '' ? '还没有添加任何装备。' : '这个分组下暂时没有装备。'}">还没有添加任何装备。</p>
+      </div>
+
+      <nav class="pagination" th:if="${equipments != null and (equipments.hasPrevious() or equipments.hasNext())}" aria-label="分页导航">
+        <a th:if="${equipments.hasPrevious()}" th:href="@{${equipments.prevUrl}}"><svg class="icon" aria-hidden="true"><use href="#i-arrow-left"></use></svg>上一页</a>
+        <span class="page-num" th:text="|${equipments.page} / ${equipments.totalPages}|">1 / 1</span>
+        <a th:if="${equipments.hasNext()}" th:href="@{${equipments.nextUrl}}">下一页<svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg></a>
+      </nav>
+    </div>
+  </th:block>
+</html>

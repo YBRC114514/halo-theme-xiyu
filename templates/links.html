@@ -1,0 +1,128 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
+  <th:block th:fragment="head">
+    <title th:text="|${linksTitle} - ${site.title}|">友情链接 - 站点标题</title>
+    <th:block th:if="${theme.config.seo.enable_metadata != false}">
+  <link rel="canonical" th:href="${site.url + '/links'}" />
+  <meta property="og:type" th:content="website" />
+  <meta property="og:site_name" th:content="${site.title}" />
+  <meta property="og:title" th:content="|${linksTitle} - ${site.title}|" />
+  <meta property="og:url" th:content="${site.url + '/links'}" />
+  <meta property="og:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta property="og:image" th:if="${site.logo}" th:content="${site.logo}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" th:content="|${linksTitle} - ${site.title}|" />
+  <meta name="twitter:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta name="twitter:image" th:if="${site.logo}" th:content="${site.logo}" />
+</th:block>
+
+  </th:block>
+
+  <th:block th:fragment="content">
+    <div class="shell">
+      <div class="page-head">
+        <nav class="breadcrumb" aria-label="面包屑"><a th:href="@{/}">首页</a><span>/</span><span th:text="${linksTitle}">友情链接</span></nav>
+        <h1 th:text="${linksTitle}">友情链接</h1>
+        <p>一些值得常去坐坐的站点，也欢迎你来交换一枚坐标。</p>
+      </div>
+
+      <div class="links-hero">
+        <section class="links-intro-card" data-reveal>
+          <span class="eyebrow"><svg class="icon" aria-hidden="true"><use href="#i-link"></use></svg> LINKS / 友链交换</span>
+          <h2 th:text="${theme.config.links.intro_title ?: '一起把小岛连成群岛'}">一起把小岛连成群岛</h2>
+          <p th:text="${theme.config.links.intro_desc ?: '如果你的站点也在认真记录点什么，欢迎按下方规则申请互换链接。'}">友链介绍文案</p>
+          <div class="intro-actions">
+            <button class="btn btn-gradient" type="button" data-link-apply th:attr="data-apply-url=${theme.config.links.apply_url}, data-apply-enabled=${linkApplicationEnabled ?: false}">
+              <svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg>申请友链
+            </button>
+            <button class="btn btn-gradient warm" type="button" data-random-link th:if="${theme.config.links.show_random != false}">
+              <svg class="icon" aria-hidden="true"><use href="#i-shuffle"></use></svg><span data-random-label>随机访问</span>
+            </button>
+          </div>
+          <div class="decor-tiles" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        </section>
+
+        <section class="links-info-card" data-reveal>
+          <div class="tab-switch" role="tablist" data-tab-switch>
+            <span class="tab-switch-indicator" aria-hidden="true"></span>
+            <button type="button" class="is-active" data-links-tab="info" data-tab-index="0" role="tab" aria-selected="true">站点信息</button>
+            <button type="button" data-links-tab="rules" data-tab-index="1" role="tab" aria-selected="false">友链规则</button>
+          </div>
+
+          <div class="tab-panels">
+          <div class="tab-panel is-active" data-tab-panel="info" role="tabpanel">
+            <ul class="site-info-list" th:with="infoName=${theme.config.links.site_name ?: site.title}, infoUrl=${#strings.isEmpty(theme.config.links.site_url) ? site.url : theme.config.links.site_url}, infoDesc=${theme.config.links.site_description ?: site.subtitle}, infoMail=${#strings.isEmpty(theme.config.links.site_email) ? theme.config.basic.email : theme.config.links.site_email}, infoRss=${#strings.isEmpty(theme.config.links.site_rss) ? (#strings.endsWith(site.url, '/') ? site.url + 'rss.xml' : site.url + '/rss.xml') : theme.config.links.site_rss}">
+              <li><span class="label">名称</span><span class="value" th:text="${infoName}">站点名称</span><button class="copy-btn" type="button" title="复制名称" aria-label="复制名称" th:attr="data-copy=${infoName}"><svg class="icon" aria-hidden="true"><use href="#i-copy"></use></svg></button></li>
+              <li><span class="label">网址</span><span class="value" th:text="${infoUrl}">https://example.com</span><button class="copy-btn" type="button" title="复制网址" aria-label="复制网址" th:attr="data-copy=${infoUrl}"><svg class="icon" aria-hidden="true"><use href="#i-copy"></use></svg></button></li>
+              <li><span class="label">简介</span><span class="value" th:text="${infoDesc}">站点简介</span><button class="copy-btn" type="button" title="复制简介" aria-label="复制简介" th:attr="data-copy=${infoDesc}"><svg class="icon" aria-hidden="true"><use href="#i-copy"></use></svg></button></li>
+              <li th:if="${not #strings.isEmpty(infoMail)}"><span class="label">邮箱</span><span class="value" th:text="${infoMail}">hello@example.com</span><button class="copy-btn" type="button" title="复制邮箱" aria-label="复制邮箱" th:attr="data-copy=${infoMail}"><svg class="icon" aria-hidden="true"><use href="#i-copy"></use></svg></button></li>
+              <li th:if="${theme.config.links.show_site_rss != false}"><span class="label">RSS</span><span class="value" th:text="${infoRss}">https://example.com/rss.xml</span><button class="copy-btn" type="button" title="复制 RSS" aria-label="复制 RSS" th:attr="data-copy=${infoRss}"><svg class="icon" aria-hidden="true"><use href="#i-copy"></use></svg></button></li>
+            </ul>
+          </div>
+
+          <div class="tab-panel" data-tab-panel="rules" role="tabpanel">
+            <div class="link-rule" th:text="${theme.config.links.link_rules ?: '站点内容原创且持续更新，不含违规内容；请先在贵站添加本站链接，再提交站点名称、地址、简介与头像。审核通过后会展示在下方分组中。'}">友链规则</div>
+          </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Friends-link application: Halo official Links plugin REST API -->
+      <dialog class="apply-dialog" data-apply-dialog aria-labelledby="apply-title">
+        <form data-apply-form>
+          <div class="apply-head">
+            <h2 id="apply-title">申请友链</h2>
+            <button class="apply-close" type="button" data-apply-close aria-label="关闭"><svg class="icon" aria-hidden="true"><use href="#i-close"></use></svg></button>
+          </div>
+          <p class="apply-tip">信息会提交给站主审核，请先在贵站添加本站链接。</p>
+          <div class="apply-fields">
+            <label><span>站点名称 *</span><input name="displayName" type="text" required maxlength="80" placeholder="你的站点名称" /></label>
+            <label><span>站点地址 *</span><input name="url" type="url" required placeholder="https://example.com" /></label>
+            <label><span>Logo 地址</span><input name="logo" type="url" placeholder="https://example.com/logo.png" /></label>
+            <label><span>联系邮箱</span><input name="email" type="email" placeholder="hello@example.com" /></label>
+            <label><span>反链地址</span><input name="backlink" type="url" placeholder="https://example.com/links" /></label>
+            <label><span>站点简介</span><textarea name="description" rows="2" maxlength="300"></textarea></label>
+            <label><span>RSS 地址（每行一个）</span><textarea name="feedUrls" rows="2" placeholder="https://example.com/rss.xml"></textarea></label>
+          </div>
+          <div class="apply-captcha">
+            <img class="apply-captcha-img" data-apply-captcha alt="验证码" hidden />
+            <button class="apply-captcha-refresh" type="button" data-apply-captcha-refresh aria-label="换一张验证码"><svg class="icon" aria-hidden="true"><use href="#i-shuffle"></use></svg></button>
+            <input name="captchaCode" type="text" required maxlength="5" autocomplete="off" placeholder="输入图中验证码" />
+          </div>
+          <p class="apply-message" data-apply-message hidden></p>
+          <div class="apply-actions">
+            <button class="btn btn-gradient" type="submit" data-apply-submit>提交申请<svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg></button>
+          </div>
+        </form>
+      </dialog>
+
+      <div class="link-toolbar" th:if="${not #lists.isEmpty(simpleGroups)}" data-chip-switch>
+        <span class="chip-indicator" data-chip-indicator aria-hidden="true"></span>
+        <button class="chip is-active" type="button" data-link-group="">全部</button>
+        <button class="chip" type="button" th:each="g : ${simpleGroups}" th:attr="data-link-group=${g.metadata.name}" th:text="${g.spec.displayName}">分组</button>
+      </div>
+
+      <section class="link-group" th:each="g : ${groups}" th:attr="data-group=${g.metadata.name}" data-reveal>
+        <h2><span th:text="${g.spec.displayName ?: '未分组'}">分组名称</span><em th:text="|${#lists.size(g.links)} 个站点|">0 个站点</em></h2>
+        <div class="link-grid">
+          <a class="link-card" th:each="link : ${g.links}" th:href="${link.spec.url}" target="_blank" rel="noopener noreferrer" th:attr="data-link-name=${link.spec.displayName}" data-reveal>
+            <span class="logo">
+              <img th:if="${not #strings.isEmpty(link.spec.logo)}" th:src="${link.spec.logo}" th:alt="${link.spec.displayName}" loading="lazy" />
+              <span th:unless="${not #strings.isEmpty(link.spec.logo)}" th:text="${#strings.substring(link.spec.displayName, 0, 1)}">A</span>
+            </span>
+            <span class="body">
+              <span class="name"><span th:text="${link.spec.displayName}">站点名称</span><svg class="icon" aria-hidden="true"><use href="#i-external"></use></svg></span>
+              <span class="desc" th:text="${link.spec.description ?: link.spec.url}">站点描述</span>
+            </span>
+          </a>
+        </div>
+      </section>
+
+      <div class="links-empty" th:if="${#lists.isEmpty(groups)}">还没有添加友情链接，来申请第一个吧。</div>
+
+      <section class="comments" th:if="${haloCommentEnabled}">
+        <halo:comment group="plugin.halo.run" kind="Plugin" th:attr="name=${pluginName}" />
+      </section>
+    </div>
+  </th:block>
+</html>

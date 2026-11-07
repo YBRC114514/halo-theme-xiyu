@@ -1,0 +1,50 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
+  <th:block th:fragment="head">
+    <title th:text="|全部分类 - ${site.title}|">全部分类 - 站点标题</title>
+    <th:block th:if="${theme.config.seo.enable_metadata != false}">
+  <link rel="canonical" th:href="${site.url + site.routes.categoriesUri}" />
+  <meta property="og:type" th:content="website" />
+  <meta property="og:site_name" th:content="${site.title}" />
+  <meta property="og:title" th:content="|全部分类 - ${site.title}|" />
+  <meta property="og:url" th:content="${site.url + site.routes.categoriesUri}" />
+  <meta property="og:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta property="og:image" th:if="${site.logo}" th:content="${site.logo}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" th:content="|全部分类 - ${site.title}|" />
+  <meta name="twitter:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta name="twitter:image" th:if="${site.logo}" th:content="${site.logo}" />
+</th:block>
+
+  </th:block>
+
+  <th:block th:fragment="content">
+    <div class="shell">
+      <div class="page-head">
+        <nav class="breadcrumb" aria-label="面包屑"><a th:href="@{/}">首页</a><span>/</span><span>全部分类</span></nav>
+        <h1>全部分类</h1>
+        <p th:text="|共 ${#lists.size(categories)} 个分类，按主题浏览文章|">按主题浏览文章</p>
+      </div>
+
+      <div class="content-grid no-sidebar">
+        <div>
+          <div class="taxonomy-grid">
+            <a class="taxonomy-card" th:each="cat : ${categories}" th:href="@{${cat.status.permalink}}" data-reveal>
+              <h2 th:text="${cat.spec.displayName}">分类名称</h2>
+              <p th:text="${cat.spec.description ?: '这个分类还没有填写描述。'}">分类描述</p>
+              <span class="count" th:text="|${cat.postCount} 篇文章|">0 篇文章</span>
+              <div class="post-tags" th:if="${not #lists.isEmpty(cat.children)}">
+                <span class="chip" th:each="child : ${cat.children}" th:text="${child.spec.displayName}">子分类</span>
+              </div>
+            </a>
+          </div>
+
+          <div class="empty-state" th:if="${#lists.isEmpty(categories)}">
+            <svg class="icon" aria-hidden="true"><use href="#i-folder"></use></svg>
+            <p>还没有创建分类。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </th:block>
+</html>

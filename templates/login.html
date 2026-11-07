@@ -1,0 +1,80 @@
+<!doctype html>
+<html
+  xmlns:th="https://www.thymeleaf.org"
+  th:replace="~{gateway_fragments/layout :: layout(title = |#{title} - ${site.title}|, head = ~{::loginHead}, body = ~{::loginBody})}"
+>
+  <th:block th:fragment="loginHead">
+    <th:block th:with="gwOff=${theme.config.gateway?.gateway_enabled == false or theme.config.gateway?.gateway_enabled == 'false'}">
+      <link th:unless="${gwOff}" rel="stylesheet" th:href="${#theme.assets('/gateway.css')}" />
+    </th:block>
+  </th:block>
+
+  <th:block th:fragment="loginBody" th:with="gwOff=${theme.config.gateway?.gateway_enabled == false or theme.config.gateway?.gateway_enabled == 'false'}">
+    <!-- 主题登录页 -->
+    <div
+      th:unless="${gwOff}"
+      class="gw-page gateway-wrapper"
+      th:with="brandLogo=${theme.config.home.brand_logo ?: site.logo},
+               brandName=${theme.config.home.brand_title ?: (theme.config.home.hero_title ?: site.title)},
+               gwLogo=${theme.config.gateway?.gateway_logo ?: brandLogo},
+               gwTitle=${#strings.isEmpty(theme.config.gateway?.gateway_title) ? brandName : theme.config.gateway?.gateway_title},
+               gwSub=${theme.config.gateway?.gateway_subtitle ?: (theme.config.basic?.login_subtitle ?: site.subtitle)},
+               gwShape=${theme.config.gateway?.gateway_logo_shape ?: 'rounded'},
+               gwBg=${theme.config.gateway?.gateway_bg_image ?: ''},
+               hasBg=${not #strings.isEmpty(theme.config.gateway?.gateway_bg_image)},
+               gwBlur=${#strings.isEmpty(theme.config.gateway?.gateway_bg_blur) ? '0' : theme.config.gateway?.gateway_bg_blur},
+               gwDim=${#strings.isEmpty(theme.config.gateway?.gateway_bg_dim) ? '0.2' : theme.config.gateway?.gateway_bg_dim},
+               gwPos=${theme.config.gateway?.gateway_bg_position ?: 'center'}"
+      th:classappend="${hasBg} ? 'has-photo' : ''"
+      th:style="|--gw-accent-light:${theme.config.style.accent_light ?: '#1158d1'};--gw-accent-dark:${theme.config.style.accent_dark ?: '#008fec'};--gw-bg-blur:${gwBlur}px;--gw-dim:${gwDim};--gw-photo-pos:${gwPos}|"
+    >
+      <img class="gw-bg" th:if="${hasBg}" th:src="${gwBg}" alt="" aria-hidden="true" />
+      <span class="gw-orb gw-orb-a" aria-hidden="true"></span>
+      <span class="gw-orb gw-orb-b" aria-hidden="true"></span>
+
+      <main class="gw-card">
+        <header class="gw-head">
+          <a
+            class="gw-logo"
+            th:classappend="${gwShape == 'circle' ? 'is-circle' : (gwShape == 'square' ? 'is-square' : '')}"
+            th:href="@{/}"
+            th:attr="aria-label=${site.title}"
+          >
+            <img th:if="${not #strings.isEmpty(gwLogo)}" th:src="${gwLogo}" th:alt="${brandName}" />
+            <span class="gw-logo-mark" th:unless="${not #strings.isEmpty(gwLogo)}" th:text="${#strings.isEmpty(brandName) ? 'H' : #strings.substring(brandName, 0, 1)}">H</span>
+          </a>
+          <h1 class="gw-title" th:text="${gwTitle}">站点标题</h1>
+          <p class="gw-sub" th:text="${#strings.isEmpty(gwSub) ? '欢迎回来，请先登录' : gwSub}">欢迎回来，请先登录</p>
+        </header>
+
+        <div class="gw-body">
+          <div th:replace="~{gateway_fragments/login::form}"></div>
+          <div th:replace="~{gateway_fragments/login::formAuthProviders}"></div>
+          <div th:replace="~{gateway_fragments/common::socialAuthProviders}"></div>
+        </div>
+
+        <footer class="gw-foot">
+          <div th:replace="~{gateway_fragments/common::signupNoticeContent}"></div>
+          <div th:replace="~{gateway_fragments/common::returnToSiteContent}"></div>
+        </footer>
+      </main>
+
+      <div class="gw-lang"><div th:replace="~{gateway_fragments/common::languageSwitcher}"></div></div>
+    </div>
+
+    <!-- 回退：Halo 内置登录页 -->
+    <div th:if="${gwOff}" class="gateway-wrapper">
+      <div th:replace="~{gateway_fragments/common::haloLogo}"></div>
+
+      <div class="halo-form-wrapper">
+        <div th:replace="~{gateway_fragments/login::form}"></div>
+        <div th:replace="~{gateway_fragments/login::formAuthProviders}"></div>
+        <div th:replace="~{gateway_fragments/common::socialAuthProviders}"></div>
+      </div>
+
+      <div th:replace="~{gateway_fragments/common::signupNoticeContent}"></div>
+      <div th:replace="~{gateway_fragments/common::returnToSiteContent}"></div>
+      <div th:replace="~{gateway_fragments/common::languageSwitcher}"></div>
+    </div>
+  </th:block>
+</html>

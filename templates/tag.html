@@ -1,0 +1,151 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
+  <th:block th:fragment="head">
+    <title th:text="|${tag.spec.displayName} - ${site.title}|">标签名称 - 站点标题</title>
+    <th:block th:if="${theme.config.seo.enable_metadata != false}">
+  <link rel="canonical" th:href="${site.url + tag.status.permalink}" />
+  <meta property="og:type" th:content="website" />
+  <meta property="og:site_name" th:content="${site.title}" />
+  <meta property="og:title" th:content="|${tag.spec.displayName} - ${site.title}|" />
+  <meta property="og:url" th:content="${site.url + tag.status.permalink}" />
+  <meta property="og:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta property="og:image" th:if="${tag.spec.cover ?: site.logo}" th:content="${tag.spec.cover ?: site.logo}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" th:content="|${tag.spec.displayName} - ${site.title}|" />
+  <meta name="twitter:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta name="twitter:image" th:if="${tag.spec.cover ?: site.logo}" th:content="${tag.spec.cover ?: site.logo}" />
+</th:block>
+
+  </th:block>
+
+  <th:block th:fragment="content">
+    <div class="shell">
+      <div class="page-head">
+        <nav class="breadcrumb" aria-label="面包屑"><a th:href="@{/}">首页</a><span>/</span><a th:href="@{${site.routes.tagsUri}}">全部标签</a><span>/</span><span th:text="${tag.spec.displayName}">标签</span></nav>
+        <h1 th:text="|# ${tag.spec.displayName}|"># 标签名称</h1>
+        <p th:text="|该标签下共 ${posts.total} 篇文章|">该标签下的文章</p>
+      </div>
+
+      <div class="content-grid" th:classappend="${theme.config.layout.show_sidebar == false} ? 'no-sidebar' : ''" th:attr="data-sidebar=${theme.config.layout.sidebar_position ?: 'right'}">
+        <div class="content-main">
+          <div class="section-bar">
+            <h2 class="section-title">标签文章</h2>
+            <span class="section-hint" th:text="|第 ${posts.page} / ${posts.totalPages} 页|">第 1 页</span>
+          </div>
+
+          <div class="post-grid" data-post-grid th:classappend="${(theme.config.layout.grid_columns ?: '2') == '3'} ? 'cols-3' : ''" th:attr="data-default-view=${theme.config.layout.home_layout ?: 'grid'}">
+            <article class="post-card" th:each="post : ${posts.items}" th:classappend="${post.spec.pinned} ? 'featured'" data-reveal>
+  <a class="post-cover" th:href="@{${post.status.permalink}}" th:if="${theme.config.layout.show_cover != false}"
+     th:classappend="${#strings.isEmpty(post.spec.cover)} ? 'is-empty' : ''"
+     th:attr="aria-label=${post.spec.title}, data-glyph=${#strings.isEmpty(post.spec.cover) ? #strings.substring(post.spec.title, 0, 1) : ''}">
+    <img th:if="${not #strings.isEmpty(post.spec.cover)}" th:src="${post.spec.cover}" th:alt="${post.spec.title}" loading="lazy" decoding="async" />
+    <span class="cover-badge" th:if="${not #lists.isEmpty(post.categories)}" th:text="${post.categories[0].spec.displayName}">分类</span>
+  </a>
+  <div class="post-body">
+    <h2 class="post-title"><a th:href="@{${post.status.permalink}}" th:text="${post.spec.title}">文章标题</a></h2>
+    <p class="post-excerpt" th:if="${theme.config.layout.show_excerpt != false and not #strings.isEmpty(post.status.excerpt)}" th:text="${post.status.excerpt}">文章摘要</p>
+    <div class="post-meta" th:if="${theme.config.layout.show_post_meta != false}">
+      <span><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg><time th:datetime="${post.spec.publishTime}" th:text="${#temporals.format(post.spec.publishTime, 'yyyy-MM-dd')}">2026-01-01</time></span>
+      <span th:if="${not #lists.isEmpty(post.categories)}"><svg class="icon" aria-hidden="true"><use href="#i-folder"></use></svg><a th:href="@{${post.categories[0].status.permalink}}" th:text="${post.categories[0].spec.displayName}">分类</a></span>
+      <span><svg class="icon" aria-hidden="true"><use href="#i-eye"></use></svg><span th:text="${post.stats.visit}">0</span></span>
+      <span><svg class="icon" aria-hidden="true"><use href="#i-message"></use></svg><span th:text="${post.stats.comment}">0</span></span>
+    </div>
+    <div class="post-tags" th:if="${not #lists.isEmpty(post.tags)}">
+      <a class="chip" th:each="tag, state : ${post.tags}" th:if="${state.index < 2}" th:href="@{${tag.status.permalink}}" th:text="|# ${tag.spec.displayName}|"># 标签</a>
+    </div>
+  </div>
+</article>
+
+          </div>
+
+          <div class="empty-state" th:if="${#lists.isEmpty(posts.items)}">
+            <svg class="icon" aria-hidden="true"><use href="#i-tag"></use></svg>
+            <p>这个标签下暂时没有文章。</p>
+          </div>
+
+          <nav class="pagination" th:if="${posts.hasPrevious() || posts.hasNext()}" aria-label="分页导航">
+  <a th:if="${posts.hasPrevious()}" th:href="@{${posts.prevUrl}}">
+    <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"></use></svg>上一页
+  </a>
+  <span class="page-num" th:text="|${posts.page} / ${posts.totalPages}|">1 / 1</span>
+  <a th:if="${posts.hasNext()}" th:href="@{${posts.nextUrl}}">
+    下一页<svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg>
+  </a>
+</nav>
+
+        </div>
+
+        <aside class="sidebar" aria-label="侧边栏" th:if="${theme.config.layout.show_sidebar != false}">
+  <section class="widget profile-card" aria-label="站点名片" th:with="avatarImg = ${theme.config.basic.avatar ?: site.logo}, coverImg = ${theme.config.basic.profile_cover}">
+    <div class="profile-cover">
+      <img th:if="${not #strings.isEmpty(coverImg)}" th:src="${coverImg}" alt="" aria-hidden="true" />
+      <span class="profile-cover-pattern" th:unless="${not #strings.isEmpty(coverImg)}" aria-hidden="true"></span>
+    </div>
+    <div class="profile-body">
+      <div class="profile-avatar-wrap">
+        <img class="profile-avatar" th:if="${not #strings.isEmpty(avatarImg)}" th:src="${avatarImg}" th:alt="${site.title}" />
+        <span class="profile-avatar-fallback" th:unless="${not #strings.isEmpty(avatarImg)}" th:text="${#strings.isEmpty(site.title) ? '青' : #strings.substring(site.title, 0, 1)}">青</span>
+      </div>
+      <h2 class="profile-name" th:text="${theme.config.basic.profile_name ?: site.title}">站点标题</h2>
+      <p class="profile-bio" th:text="${theme.config.basic.intro ?: site.subtitle}">个人简介</p>
+      <div class="profile-actions" th:if="${theme.config.basic.show_profile_buttons != false}"
+           th:with="btn1Mode=${theme.config.basic.profile_btn1_mode ?: 'login'}, btn2Icon=${#strings.isEmpty(theme.config.basic.profile_btn2_icon) ? 'rss' : theme.config.basic.profile_btn2_icon}">
+        <a th:if="${btn1Mode == 'login'}" class="profile-btn primary" data-auth-profile th:href="@{${theme.config.basic.profile_btn1_url ?: '/login'}}"
+           th:attr="data-auth-login-href=@{${theme.config.basic.profile_btn1_url ?: '/login'}}, data-auth-login-text=${theme.config.basic.profile_btn1_text ?: '登录'}, data-auth-user-href=@{/uc}, data-auth-user-text=${'个人中心'}"><svg class="icon" aria-hidden="true"><use href="#i-user"></use></svg><span data-auth-label th:text="${theme.config.basic.profile_btn1_text ?: '登录'}">登录</span></a>
+        <a th:unless="${btn1Mode == 'login'}" class="profile-btn primary" th:href="@{${theme.config.basic.profile_btn1_url ?: '/uc'}}"><svg class="icon" aria-hidden="true"><use href="#i-user"></use></svg><span th:text="${theme.config.basic.profile_btn1_text ?: '登录'}">登录</span></a>
+        <a class="profile-btn" th:href="@{${theme.config.basic.profile_btn2_url ?: '/rss.xml'}}"><svg class="icon" aria-hidden="true"><use th:attr="href=${'#i-' + btn2Icon}"></use></svg><span th:text="${theme.config.basic.profile_btn2_text ?: '订阅'}">订阅</span></a>
+      </div>
+      <div class="profile-social" th:if="${(theme.config.basic.show_github_link != false and !#strings.isEmpty(theme.config.basic.github_url)) or (theme.config.basic.show_email_link != false and !#strings.isEmpty(theme.config.basic.email))}">
+        <a th:if="${theme.config.basic.show_github_link != false and !#strings.isEmpty(theme.config.basic.github_url)}" th:href="${theme.config.basic.github_url}" target="_blank" rel="noopener noreferrer" aria-label="GitHub"><svg class="icon" aria-hidden="true"><use href="#i-github"></use></svg></a>
+        <a th:if="${theme.config.basic.show_email_link != false and !#strings.isEmpty(theme.config.basic.email)}" th:href="|mailto:${theme.config.basic.email}|" aria-label="邮箱"><svg class="icon" aria-hidden="true"><use href="#i-mail"></use></svg></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="widget" th:with="cats = ${categoryFinder.listAll()}">
+    <h2 class="widget-title"><svg class="icon" aria-hidden="true"><use href="#i-folder"></use></svg>文章分类</h2>
+    <ul class="widget-list" th:if="${not #lists.isEmpty(cats)}">
+      <li th:each="cat, state : ${cats}" th:if="${state.index < 8}">
+        <a th:href="@{${cat.status.permalink}}">
+          <span class="item-text" th:text="${cat.spec.displayName}">分类</span>
+          <span class="count" th:text="${cat.postCount}">0</span>
+        </a>
+      </li>
+    </ul>
+    <p class="links-empty" th:unless="${not #lists.isEmpty(cats)}">暂无分类</p>
+  </section>
+
+  <section class="widget" th:with="allTags = ${tagFinder.listAll()}">
+    <h2 class="widget-title"><svg class="icon" aria-hidden="true"><use href="#i-tag"></use></svg>标签云</h2>
+    <div class="tag-cloud" th:if="${not #lists.isEmpty(allTags)}">
+      <a class="chip" th:each="tag, state : ${allTags}" th:if="${state.index < 18}" th:href="@{${tag.status.permalink}}" th:text="${tag.spec.displayName}">标签</a>
+    </div>
+    <p class="links-empty" th:unless="${not #lists.isEmpty(allTags)}">暂无标签</p>
+  </section>
+
+  <section class="widget" th:with="recent = ${postFinder.list(1, 5)}">
+    <h2 class="widget-title"><svg class="icon" aria-hidden="true"><use href="#i-sparkles"></use></svg>最新文章</h2>
+    <div th:each="item : ${recent.items}" class="recent-item">
+      <img class="recent-thumb" th:if="${not #strings.isEmpty(item.spec.cover)}" th:src="${item.spec.cover}" th:alt="${item.spec.title}" loading="lazy" />
+      <span class="recent-thumb-fallback" th:unless="${not #strings.isEmpty(item.spec.cover)}" th:text="${#strings.substring(item.spec.title, 0, 1)}">文</span>
+      <div>
+        <a th:href="@{${item.status.permalink}}" th:text="${item.spec.title}">文章标题</a>
+        <time th:text="${#temporals.format(item.spec.publishTime, 'yyyy-MM-dd')}">2026-01-01</time>
+      </div>
+    </div>
+  </section>
+
+  <section class="widget" th:with="stat = ${postFinder.list(1, 1)}, catCount = ${#lists.size(categoryFinder.listAll())}, tagCount = ${#lists.size(tagFinder.listAll())}">
+    <h2 class="widget-title"><svg class="icon" aria-hidden="true"><use href="#i-book"></use></svg>站点统计</h2>
+    <div class="stat-grid">
+      <div><strong th:text="${stat.total}">0</strong><span>文章</span></div>
+      <div><strong th:text="${catCount}">0</strong><span>分类</span></div>
+      <div><strong th:text="${tagCount}">0</strong><span>标签</span></div>
+    </div>
+  </section>
+</aside>
+
+      </div>
+    </div>
+  </th:block>
+</html>

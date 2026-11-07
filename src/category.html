@@ -1,0 +1,39 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
+  <th:block th:fragment="head">
+    <title th:text="|${category.spec.displayName} - ${site.title}|">分类名称 - 站点标题</title>
+    <include src="partials/seo.html" canonical="${site.url + category.status.permalink}" title="|${category.spec.displayName} - ${site.title}|" description="${category.spec.description ?: site.subtitle}" image="${category.spec.cover ?: site.logo}" type="website" />
+  </th:block>
+
+  <th:block th:fragment="content">
+    <div class="shell">
+      <div class="page-head">
+        <nav class="breadcrumb" aria-label="面包屑"><a th:href="@{/}">首页</a><span>/</span><a th:href="@{${site.routes.categoriesUri}}">全部分类</a><span>/</span><span th:text="${category.spec.displayName}">分类</span></nav>
+        <h1 th:text="${category.spec.displayName}">分类名称</h1>
+        <p th:text="${category.spec.description ?: '该分类下共 ' + posts.total + ' 篇文章'}">分类描述</p>
+      </div>
+
+      <div class="content-grid" th:classappend="${theme.config.layout.show_sidebar == false} ? 'no-sidebar' : ''" th:attr="data-sidebar=${theme.config.layout.sidebar_position ?: 'right'}">
+        <div class="content-main">
+          <div class="section-bar">
+            <h2 class="section-title">分类文章</h2>
+            <span class="section-hint" th:text="|共 ${posts.total} 篇 · 第 ${posts.page} 页|">共 0 篇</span>
+          </div>
+
+          <div class="post-grid" data-post-grid th:classappend="${(theme.config.layout.grid_columns ?: '2') == '3'} ? 'cols-3' : ''" th:attr="data-default-view=${theme.config.layout.home_layout ?: 'grid'}">
+            <include src="partials/post-card.html" />
+          </div>
+
+          <div class="empty-state" th:if="${#lists.isEmpty(posts.items)}">
+            <svg class="icon" aria-hidden="true"><use href="#i-folder"></use></svg>
+            <p>这个分类下暂时没有文章。</p>
+          </div>
+
+          <include src="partials/pagination.html" />
+        </div>
+
+        <include src="partials/sidebar.html" />
+      </div>
+    </div>
+  </th:block>
+</html>

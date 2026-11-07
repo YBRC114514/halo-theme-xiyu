@@ -1,0 +1,72 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
+  <th:block th:fragment="head">
+    <title th:text="|${singlePage.spec.title} - ${site.title}|">页面标题 - 站点标题</title>
+    <th:block th:if="${theme.config.seo.enable_metadata != false}">
+  <link rel="canonical" th:href="${site.url + singlePage.status.permalink}" />
+  <meta property="og:type" th:content="article" />
+  <meta property="og:site_name" th:content="${site.title}" />
+  <meta property="og:title" th:content="${singlePage.spec.title}" />
+  <meta property="og:url" th:content="${site.url + singlePage.status.permalink}" />
+  <meta property="og:description" th:if="${singlePage.status.excerpt}" th:content="${singlePage.status.excerpt}" />
+  <meta property="og:image" th:if="${singlePage.spec.cover ?: site.logo}" th:content="${singlePage.spec.cover ?: site.logo}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" th:content="${singlePage.spec.title}" />
+  <meta name="twitter:description" th:if="${singlePage.status.excerpt}" th:content="${singlePage.status.excerpt}" />
+  <meta name="twitter:image" th:if="${singlePage.spec.cover ?: site.logo}" th:content="${singlePage.spec.cover ?: site.logo}" />
+</th:block>
+
+  </th:block>
+
+  <th:block th:fragment="content">
+    <div class="shell">
+      <div class="page-head">
+        <nav class="breadcrumb" aria-label="面包屑">
+          <a th:href="@{/}">首页</a><span>/</span>
+          <span th:text="${singlePage.spec.title}">页面</span>
+        </nav>
+      </div>
+
+      <div class="content-grid no-sidebar">
+        <div>
+          <div class="article-layout" th:classappend="${theme.config.features.show_toc == false} ? 'no-toc' : ''">
+            <article class="article">
+              <header class="article-head">
+                <h1 th:text="${singlePage.spec.title}">页面标题</h1>
+                <div class="article-meta">
+                  <span><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg><time th:text="${#temporals.format(singlePage.spec.publishTime, 'yyyy-MM-dd')}">2026-01-01</time></span>
+                  <span><svg class="icon" aria-hidden="true"><use href="#i-eye"></use></svg><span th:text="${singlePage.stats.visit}">0</span> 次阅读</span>
+                  <span th:if="${singlePage.owner != null}"><svg class="icon" aria-hidden="true"><use href="#i-user"></use></svg><span th:text="${singlePage.owner.displayName}">作者</span></span>
+                </div>
+              </header>
+
+              <figure class="article-cover" th:if="${not #strings.isEmpty(singlePage.spec.cover)}">
+                <img th:src="${singlePage.spec.cover}" th:alt="${singlePage.spec.title}" loading="lazy" />
+              </figure>
+
+              <div class="summary-card" th:if="${theme.config.features.show_summary_card != false and not #strings.isEmpty(singlePage.status.excerpt)}"
+                   th:attr="data-typing=${theme.config.features.summary_typing != false ? 'on' : 'off'},
+                            data-typing-speed=${theme.config.features.summary_typing_speed ?: '16'}">
+                <div class="summary-head"><span><svg class="icon" aria-hidden="true"><use href="#i-sparkles"></use></svg>页面摘要</span></div>
+                <p class="summary-text" th:text="${singlePage.status.excerpt}">页面摘要内容。</p>
+              </div>
+
+              <div class="entry-content" th:utext="${singlePage.content.content}">
+                <p>页面内容</p>
+              </div>
+            </article>
+
+            <aside class="toc" th:if="${theme.config.features.show_toc != false}" aria-label="页面目录">
+              <div class="toc-title"><svg class="icon" aria-hidden="true"><use href="#i-list-alt"></use></svg>本页目录</div>
+              <nav><ul data-toc-list><li class="toc-indicator" aria-hidden="true"></li></ul></nav>
+            </aside>
+          </div>
+
+          <section class="comments" id="post-comment" th:if="${haloCommentEnabled}">
+            <halo:comment group="content.halo.run" kind="SinglePage" th:attr="name=${singlePage.metadata.name}" />
+          </section>
+        </div>
+      </div>
+    </div>
+  </th:block>
+</html>

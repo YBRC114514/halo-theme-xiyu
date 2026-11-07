@@ -1,0 +1,58 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
+  <th:block th:fragment="head">
+    <title th:text="|朋友圈 - ${site.title}|">朋友圈 - 站点标题</title>
+    <th:block th:if="${theme.config.seo.enable_metadata != false}">
+  <link rel="canonical" th:href="${site.url + (singlePage != null ? singlePage.status.permalink : '/friends')}" />
+  <meta property="og:type" th:content="website" />
+  <meta property="og:site_name" th:content="${site.title}" />
+  <meta property="og:title" th:content="|朋友圈 - ${site.title}|" />
+  <meta property="og:url" th:content="${site.url + (singlePage != null ? singlePage.status.permalink : '/friends')}" />
+  <meta property="og:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta property="og:image" th:if="${site.logo}" th:content="${site.logo}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" th:content="|朋友圈 - ${site.title}|" />
+  <meta name="twitter:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta name="twitter:image" th:if="${site.logo}" th:content="${site.logo}" />
+</th:block>
+
+  </th:block>
+
+  <th:block th:fragment="content">
+    <div class="shell">
+      <div class="page-head">
+        <nav class="breadcrumb" aria-label="面包屑"><a th:href="@{/}">首页</a><span>/</span><span>朋友圈</span></nav>
+        <h1>朋友圈</h1>
+        <p th:text="${theme.config.footer.friends_desc ?: '朋友们的近况与最近更新，按订阅聚合在这里。'}">朋友们的近况与最近更新。</p>
+      </div>
+
+      <div class="content-grid no-sidebar">
+        <div>
+          <div class="friends-toolbar">
+            <h2 class="section-title">订阅动态</h2>
+            <span class="section-hint" data-friend-hint>正在读取友链的 RSS 动态…</span>
+          </div>
+
+          <!-- Data source: Halo official Links plugin -> /apis/api.link.halo.run/v1alpha1/linkfeeds -->
+          <div class="friend-grid" data-friend-feed aria-live="polite"></div>
+
+          <div class="empty-state" data-friend-empty hidden>
+            <svg class="icon" aria-hidden="true"><use href="#i-rss"></use></svg>
+            <p data-friend-empty-text>还没有订阅内容。</p>
+          </div>
+
+          <div class="friend-more" data-friend-more-wrap hidden>
+            <button class="btn" type="button" data-friend-more>加载更多<svg class="icon" aria-hidden="true"><use href="#i-chevron-down"></use></svg></button>
+          </div>
+
+          <noscript>
+            <div class="empty-state">
+              <svg class="icon" aria-hidden="true"><use href="#i-rss"></use></svg>
+              <p>朋友圈动态需要启用 JavaScript 才能从官方链接插件读取。</p>
+            </div>
+          </noscript>
+        </div>
+      </div>
+    </div>
+  </th:block>
+</html>

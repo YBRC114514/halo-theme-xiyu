@@ -1,0 +1,70 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
+  <th:block th:fragment="head">
+    <title th:text="${site.title}">熹屿</title>
+    <include src="partials/seo.html" canonical="${site.url}" title="${site.title}" description="${site.subtitle}" image="${site.logo}" type="website" />
+  </th:block>
+
+  <th:block th:fragment="content">
+    <section class="hero" th:classappend="${theme.config.home.hero_fullscreen == true} ? 'is-fullscreen' : ''"
+             th:with="heroBlur=${theme.config.home.hero_blur ?: '2'},
+                      heroH=${theme.config.home.hero_fullscreen == true ? '' : (theme.config.home.hero_custom_height ?: '')},
+                      titleIsImage=${theme.config.home.hero_title_type == 'image' and not #strings.isEmpty(theme.config.home.hero_title_image)}"
+             th:style="|--hero-blur:${heroBlur}px;| + (${not #strings.isEmpty(heroH)} ? 'min-height:' + ${heroH} + ';' : '')">
+      <img class="hero-bg" th:if="${not #strings.isEmpty(theme.config.home.hero_image)}" th:src="${theme.config.home.hero_image}" alt="" aria-hidden="true" />
+      <span class="hero-orb one" aria-hidden="true"></span>
+      <span class="hero-orb two" aria-hidden="true"></span>
+      <div class="hero-inner">
+        <h1 th:classappend="${titleIsImage} ? 'hero-title-image' : ''">
+          <img th:if="${titleIsImage}" th:src="${theme.config.home.hero_title_image}" th:alt="${theme.config.home.hero_title ?: site.title}" />
+          <th:block th:unless="${titleIsImage}" th:text="${theme.config.home.hero_title ?: site.title}">熹屿 Xiyu</th:block>
+        </h1>
+        <p th:if="${theme.config.home.hero_show_subtitle != false}" th:text="${theme.config.home.hero_subtitle ?: site.subtitle}">记录技术、生活与一些细碎的想法。</p>
+        <div class="hero-actions" th:if="${theme.config.home.show_hero_actions == true}">
+          <a class="btn btn-primary" href="#post-list">浏览文章<svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg></a>
+          <a class="btn" th:href="@{${site.routes.archivesUri}}"><svg class="icon" aria-hidden="true"><use href="#i-book"></use></svg>文章归档</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="shell">
+      <div class="content-grid" th:classappend="${theme.config.layout.show_sidebar == false} ? 'no-sidebar' : ''" th:attr="data-sidebar=${theme.config.layout.sidebar_position ?: 'right'}">
+        <div class="content-main" id="post-list"
+             th:with="perPage=${theme.config.layout.posts_per_page ?: '10'},
+                      listedPosts=${postFinder.list(posts.page, #conversions.convert(perPage, 'java.lang.Integer'))},
+                      posts=${listedPosts}">
+          <div class="section-bar">
+            <h2 class="section-title">最新文章</h2>
+            <span class="section-hint" th:text="|共 ${posts.total} 篇文章 · 第 ${posts.page} 页|">共 0 篇文章</span>
+            <div class="view-switch" th:if="${theme.config.layout.show_view_switch != false}" data-view-switch>
+              <span class="view-switch-indicator" aria-hidden="true"></span>
+              <button type="button" data-view="grid" data-view-index="0" title="网格视图" aria-label="网格视图"><svg class="icon" aria-hidden="true"><use href="#i-grid"></use></svg></button>
+              <button type="button" data-view="list" data-view-index="1" title="列表视图" aria-label="列表视图"><svg class="icon" aria-hidden="true"><use href="#i-list"></use></svg></button>
+            </div>
+          </div>
+
+          <div class="post-grid" data-post-grid th:classappend="${(theme.config.layout.grid_columns ?: '2') == '3'} ? 'cols-3' : ''" th:attr="data-default-view=${theme.config.layout.home_layout ?: 'grid'}">
+            <include src="partials/post-card.html" />
+          </div>
+
+          <div class="empty-state" th:if="${#lists.isEmpty(posts.items)}">
+            <svg class="icon" aria-hidden="true"><use href="#i-book"></use></svg>
+            <p>还没有发布文章，去后台写下第一篇吧。</p>
+          </div>
+
+          <nav class="pagination" th:if="${posts.hasPrevious() || posts.hasNext()}" aria-label="分页导航">
+            <a th:if="${posts.hasPrevious()}" th:href="@{${posts.page <= 2 ? '/' : '/page/' + (posts.page - 1)}}">
+              <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"></use></svg>上一页
+            </a>
+            <span class="page-num" th:text="|${posts.page} / ${posts.totalPages}|">1 / 1</span>
+            <a th:if="${posts.hasNext()}" th:href="@{${'/page/' + (posts.page + 1)}}">
+              下一页<svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg>
+            </a>
+          </nav>
+        </div>
+
+        <include src="partials/sidebar.html" />
+      </div>
+    </div>
+  </th:block>
+</html>

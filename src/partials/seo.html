@@ -1,0 +1,13 @@
+<th:block th:if="${theme.config.seo.enable_metadata != false}">
+  <link rel="canonical" th:href="{{canonical}}" />
+  <meta property="og:type" th:content="{{type}}" />
+  <meta property="og:site_name" th:content="${site.title}" />
+  <meta property="og:title" th:content="{{title}}" />
+  <meta property="og:url" th:content="{{canonical}}" />
+  <meta property="og:description" th:if="{{description}}" th:content="{{description}}" />
+  <meta property="og:image" th:if="{{image}}" th:content="{{image}}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" th:content="{{title}}" />
+  <meta name="twitter:description" th:if="{{description}}" th:content="{{description}}" />
+  <meta name="twitter:image" th:if="{{image}}" th:content="{{image}}" />
+</th:block>

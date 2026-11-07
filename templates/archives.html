@@ -1,0 +1,59 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
+  <th:block th:fragment="head">
+    <title th:text="|文章归档 - ${site.title}|">文章归档 - 站点标题</title>
+    <th:block th:if="${theme.config.seo.enable_metadata != false}">
+  <link rel="canonical" th:href="${site.url + site.routes.archivesUri}" />
+  <meta property="og:type" th:content="website" />
+  <meta property="og:site_name" th:content="${site.title}" />
+  <meta property="og:title" th:content="|文章归档 - ${site.title}|" />
+  <meta property="og:url" th:content="${site.url + site.routes.archivesUri}" />
+  <meta property="og:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta property="og:image" th:if="${site.logo}" th:content="${site.logo}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" th:content="|文章归档 - ${site.title}|" />
+  <meta name="twitter:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta name="twitter:image" th:if="${site.logo}" th:content="${site.logo}" />
+</th:block>
+
+  </th:block>
+
+  <th:block th:fragment="content">
+    <div class="shell">
+      <div class="page-head">
+        <nav class="breadcrumb" aria-label="面包屑"><a th:href="@{/}">首页</a><span>/</span><span>文章归档</span></nav>
+        <h1>文章归档</h1>
+        <p th:text="|按时间倒序整理，共 ${archives.total} 篇文章|">按时间倒序整理</p>
+      </div>
+
+      <div class="content-grid no-sidebar">
+        <div>
+          <div class="archive-group" th:each="year : ${archives.items}" data-reveal>
+            <h2 class="archive-year" th:text="${year.year}">2026</h2>
+            <th:block th:each="month : ${year.months}">
+              <h3 class="archive-month" th:text="|${month.month} 月 · ${#lists.size(month.posts)} 篇|">1 月</h3>
+              <ul class="archive-list">
+                <li th:each="p : ${month.posts}">
+                  <time th:datetime="${p.spec.publishTime}" th:text="${#temporals.format(p.spec.publishTime, 'MM-dd')}">01-01</time>
+                  <a th:href="@{${p.status.permalink}}" th:text="${p.spec.title}">文章标题</a>
+                  <span class="chip" th:if="${not #lists.isEmpty(p.categories)}" th:text="${p.categories[0].spec.displayName}">分类</span>
+                </li>
+              </ul>
+            </th:block>
+          </div>
+
+          <div class="empty-state" th:if="${#lists.isEmpty(archives.items)}">
+            <svg class="icon" aria-hidden="true"><use href="#i-book"></use></svg>
+            <p>暂无归档文章。</p>
+          </div>
+
+          <nav class="pagination" th:if="${archives.hasPrevious() || archives.hasNext()}" aria-label="分页导航">
+            <a th:if="${archives.hasPrevious()}" th:href="@{${archives.prevUrl}}"><svg class="icon" aria-hidden="true"><use href="#i-arrow-left"></use></svg>上一页</a>
+            <span class="page-num" th:text="|${archives.page} / ${archives.totalPages}|">1 / 1</span>
+            <a th:if="${archives.hasNext()}" th:href="@{${archives.nextUrl}}">下一页<svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg></a>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </th:block>
+</html>

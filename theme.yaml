@@ -1,0 +1,26 @@
+apiVersion: theme.halo.run/v1alpha1
+kind: Theme
+metadata:
+  name: theme-xiyu
+spec:
+  displayName: 熹屿 Xiyu
+  author:
+    name: 拥抱日出
+    website: https://blog.byside.top
+  description: 一座为文字留白的岛。熹屿是一款面向 Halo 2.26+ 的响应式博客主题：杂志式首屏、克制的卡片流、清透的青蓝配色与柔和暗色模式，配合滑动高亮目录、文章入场动效、创作日历、友链自助申请与朋友圈订阅聚合，让阅读与写作都更从容。
+  logo: ""
+  homepage: "https://blog.byside.top"
+  repo: ""
+  issues: ""
+  settingName: "theme-xiyu-setting"
+  configMapName: "theme-xiyu-configmap"
+  version: 1.0.14
+  requires: ">=2.26.0"
+  customTemplates:
+    page:
+      - name: 朋友圈
+        description: 基于 Halo 官方链接插件 RSS 订阅动态（linkfeeds）的朋友圈聚合页面
+        screenshot: ""
+        file: friends.html
+  license:
+    - name: "MIT"

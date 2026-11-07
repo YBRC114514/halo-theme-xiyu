@@ -1,0 +1,44 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
+  <th:block th:fragment="head">
+    <title th:text="|全部标签 - ${site.title}|">全部标签 - 站点标题</title>
+    <th:block th:if="${theme.config.seo.enable_metadata != false}">
+  <link rel="canonical" th:href="${site.url + site.routes.tagsUri}" />
+  <meta property="og:type" th:content="website" />
+  <meta property="og:site_name" th:content="${site.title}" />
+  <meta property="og:title" th:content="|全部标签 - ${site.title}|" />
+  <meta property="og:url" th:content="${site.url + site.routes.tagsUri}" />
+  <meta property="og:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta property="og:image" th:if="${site.logo}" th:content="${site.logo}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" th:content="|全部标签 - ${site.title}|" />
+  <meta name="twitter:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta name="twitter:image" th:if="${site.logo}" th:content="${site.logo}" />
+</th:block>
+
+  </th:block>
+
+  <th:block th:fragment="content">
+    <div class="shell">
+      <div class="page-head">
+        <nav class="breadcrumb" aria-label="面包屑"><a th:href="@{/}">首页</a><span>/</span><span>全部标签</span></nav>
+        <h1>全部标签</h1>
+        <p th:text="|共 ${#lists.size(tags)} 个标签|">按标签浏览文章</p>
+      </div>
+
+      <div class="content-grid no-sidebar">
+        <div>
+          <div class="cloud" th:if="${not #lists.isEmpty(tags)}">
+            <a class="chip" th:each="tag : ${tags}" th:href="@{${tag.status.permalink}}" data-reveal>
+              <span th:text="${tag.spec.displayName}">标签</span><small th:text="${tag.postCount}">0</small>
+            </a>
+          </div>
+          <div class="empty-state" th:unless="${not #lists.isEmpty(tags)}">
+            <svg class="icon" aria-hidden="true"><use href="#i-tag"></use></svg>
+            <p>还没有创建标签。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </th:block>
+</html>
