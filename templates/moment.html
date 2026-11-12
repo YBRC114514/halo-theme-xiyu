@@ -1,0 +1,51 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
+  <th:block th:fragment="head">
+    <title th:text="|瞬间 - ${site.title}|">瞬间 - 熹屿 Xiyu</title>
+    <th:block th:if="${theme.config.seo.enable_metadata != false}">
+  <link rel="canonical" th:href="${site.url + '/moments/' + moment.metadata.name}" />
+  <meta property="og:type" th:content="article" />
+  <meta property="og:site_name" th:content="${site.title}" />
+  <meta property="og:title" th:content="|瞬间 - ${site.title}|" />
+  <meta property="og:url" th:content="${site.url + '/moments/' + moment.metadata.name}" />
+  <meta property="og:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta property="og:image" th:if="${site.logo}" th:content="${site.logo}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" th:content="|瞬间 - ${site.title}|" />
+  <meta name="twitter:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta name="twitter:image" th:if="${site.logo}" th:content="${site.logo}" />
+</th:block>
+
+  </th:block>
+
+  <!-- plugin-moments detail route /moments/{name}; variable `moment`. -->
+  <th:block th:fragment="content">
+    <div class="shell moment-detail">
+      <div class="page-head">
+        <nav class="breadcrumb" aria-label="面包屑"><a th:href="@{/}">首页</a><span>/</span><a th:href="@{/moments}">瞬间</a><span>/</span><span>详情</span></nav>
+        <h1>瞬间</h1>
+      </div>
+
+      <article class="moment-card" th:with="c=${moment.spec.content}">
+        <div class="moment-card-head">
+          <img th:if="${moment.owner != null and not #strings.isEmpty(moment.owner.avatar)}" th:src="${moment.owner.avatar}" th:alt="${moment.owner.displayName}" loading="lazy" />
+          <span class="moment-owner" th:text="${moment.owner != null ? moment.owner.displayName : '博主'}">博主</span>
+          <time th:text="${#strings.length(moment.spec.releaseTime ?: '') >= 10 ? #strings.substring(moment.spec.releaseTime, 0, 10) : (moment.spec.releaseTime ?: '')}">2026-01-01</time>
+        </div>
+        <div class="moment-content" th:if="${not #strings.isEmpty(c.html)}" th:utext="${c.html}"></div>
+        <div class="moment-media-grid" th:if="${not #lists.isEmpty(c.medium)}">
+          <th:block th:each="media : ${c.medium}">
+            <img th:if="${media.type.name == 'PHOTO'}" th:src="${media.url}" alt="瞬间图片" loading="lazy" />
+            <video th:if="${media.type.name == 'VIDEO'}" th:src="${media.url}" controls preload="metadata"></video>
+            <audio th:if="${media.type.name == 'AUDIO'}" th:src="${media.url}" controls></audio>
+          </th:block>
+        </div>
+        <div class="moment-tags" th:if="${not #lists.isEmpty(moment.spec.tags)}">
+          <a class="chip" th:each="tagName : ${moment.spec.tags}" th:href="@{/moments(tag=${tagName})}" th:text="${tagName}">标签</a>
+        </div>
+      </article>
+
+      <div class="moment-back"><a th:href="@{/moments}">← 返回瞬间列表</a></div>
+    </div>
+  </th:block>
+</html>

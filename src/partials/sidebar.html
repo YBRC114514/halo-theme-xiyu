@@ -66,4 +66,49 @@
       <div><strong th:text="${tagCount}">0</strong><span>标签</span></div>
     </div>
   </section>
+
+  <!-- 轻言 / plugin-hitokoto-hub. The finder only exists when the plugin is
+       enabled, so it lives on an inner element behind an availability guard. -->
+  <th:block th:if="${theme.config.plugins != null and theme.config.plugins.show_hitokoto == true and pluginFinder.available('hitokoto-hub')}">
+    <section class="widget hitokoto-widget" data-hitokoto th:with="quotes=${hitokotoFinder.randomSentences(1, null)}">
+      <h2 class="widget-title"><svg class="icon" aria-hidden="true"><use href="#i-sparkles"></use></svg>一言</h2>
+      <div class="hitokoto-card" th:with="q=${#lists.isEmpty(quotes) ? null : quotes[0]}">
+        <blockquote data-hitokoto-content th:text="${q != null ? q.content : '轻拾人间辞藻，言说万千心绪。'}">轻拾人间辞藻，言说万千心绪。</blockquote>
+        <div class="hitokoto-meta">
+          <span class="hitokoto-author" data-hitokoto-author>
+            <span th:if="${q != null and not #strings.isEmpty(q.author)}" th:text="${'— ' + q.author}"></span>
+            <span th:if="${q != null and #strings.isEmpty(q.author) and not #strings.isEmpty(q.source)}" th:text="${'— ' + q.source}"></span>
+          </span>
+          <button class="hitokoto-refresh" type="button" data-hitokoto-refresh aria-label="换一句">
+            <svg class="icon" aria-hidden="true"><use href="#i-shuffle"></use></svg>换一句
+          </button>
+        </div>
+        <a class="widget-more" th:href="@{/hitokoto}">前往轻言 →</a>
+      </div>
+    </section>
+  </th:block>
+
+  <!-- 最新瞬间 / plugin-moments -->
+  <th:block th:if="${theme.config.plugins != null and theme.config.plugins.show_moments == true and pluginFinder.available('PluginMoments')}">
+    <section class="widget moment-widget" th:with="cnt=${#conversions.convert(theme.config.plugins.moments_sidebar_count ?: '3', 'java.lang.Integer')}, feed=${momentFinder.list(1, cnt)}">
+      <h2 class="widget-title"><svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg>最新瞬间</h2>
+      <div class="moment-list" th:if="${not #lists.isEmpty(feed.items)}">
+        <div class="moment-item" th:each="m : ${feed.items}">
+          <time th:text="${#strings.length(m.spec.releaseTime ?: '') >= 10 ? #strings.substring(m.spec.releaseTime, 0, 10) : (m.spec.releaseTime ?: '')}">2026-01-01</time>
+          <p th:text="${m.spec.content.raw ?: ''}">瞬间内容</p>
+          <a class="widget-more" th:href="@{|/moments/${m.metadata.name}|}">查看 →</a>
+        </div>
+      </div>
+      <p class="links-empty" th:unless="${not #lists.isEmpty(feed.items)}">还没有发布瞬间</p>
+      <a class="widget-more" th:href="@{/moments}">全部瞬间 →</a>
+    </section>
+  </th:block>
+
+  <!-- 评论读者榜 / plugin-comment-next (Web Component provided by the plugin) -->
+  <th:block th:if="${theme.config.plugins != null and theme.config.plugins.show_comment_ranking == true and pluginFinder.available('PluginCommentNext')}">
+    <section class="widget ranking-widget">
+      <h2 class="widget-title"><svg class="icon" aria-hidden="true"><use href="#i-message"></use></svg>评论读者榜</h2>
+      <comment-ranking-sidebar title="活跃读者" th:attr="period=${theme.config.plugins.comment_ranking_period ?: 'month'}, limit=${theme.config.plugins.comment_ranking_limit ?: '5'}"></comment-ranking-sidebar>
+    </section>
+  </th:block>
 </aside>

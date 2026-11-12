@@ -29,10 +29,10 @@
 
     <div class="shell">
       <div class="content-grid" th:classappend="${theme.config.layout.show_sidebar == false} ? 'no-sidebar' : ''" th:attr="data-sidebar=${theme.config.layout.sidebar_position ?: 'right'}">
-        <div class="content-main" id="post-list"
-             th:with="perPage=${theme.config.layout.posts_per_page ?: '10'},
-                      listedPosts=${postFinder.list(posts.page, #conversions.convert(perPage, 'java.lang.Integer'))},
-                      posts=${listedPosts}">
+        <!-- Pagination is owned by Halo: `posts` is the built-in paged result,
+             so prevUrl/nextUrl always agree with the site's page size. Overriding
+             it with a custom per-page value produced empty /page/N URLs. -->
+        <div class="content-main" id="post-list">
           <div class="section-bar">
             <h2 class="section-title">最新文章</h2>
             <span class="section-hint" th:text="|共 ${posts.total} 篇文章 · 第 ${posts.page} 页|">共 0 篇文章</span>
@@ -52,12 +52,12 @@
             <p>还没有发布文章，去后台写下第一篇吧。</p>
           </div>
 
-          <nav class="pagination" th:if="${posts.hasPrevious() || posts.hasNext()}" aria-label="分页导航">
-            <a th:if="${posts.hasPrevious()}" th:href="@{${posts.page <= 2 ? '/' : '/page/' + (posts.page - 1)}}">
+          <nav class="pagination" th:if="${posts.hasPrevious() or posts.hasNext()}" aria-label="分页导航">
+            <a th:if="${posts.hasPrevious()}" th:href="@{${posts.prevUrl}}">
               <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"></use></svg>上一页
             </a>
             <span class="page-num" th:text="|${posts.page} / ${posts.totalPages}|">1 / 1</span>
-            <a th:if="${posts.hasNext()}" th:href="@{${'/page/' + (posts.page + 1)}}">
+            <a th:if="${posts.hasNext()}" th:href="@{${posts.nextUrl}}">
               下一页<svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg>
             </a>
           </nav>

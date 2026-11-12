@@ -4,8 +4,28 @@ type SchemeMode = "system" | "light" | "dark";
 
 const root = document.documentElement;
 const body = document.body;
-const SCHEME_KEY = "azure-isle-scheme";
-const VIEW_KEY = "azure-isle-view";
+const SCHEME_KEY = "xiyu-scheme";
+const VIEW_KEY = "xiyu-view";
+/* 1.0.14 renamed the theme from theme-azure-isle to theme-xiyu. Lift the old
+   scheme/view preferences once so returning visitors do not lose their choice;
+   the legacy keys are removed afterwards to avoid two sources of truth. */
+const LEGACY_STORAGE_KEYS: Array<[string, string]> = [
+  ["azure-isle-scheme", SCHEME_KEY],
+  ["azure-isle-view", VIEW_KEY],
+];
+function migrateLegacyStorage(): void {
+  try {
+    LEGACY_STORAGE_KEYS.forEach(([from, to]) => {
+      const legacy = localStorage.getItem(from);
+      if (legacy === null) return;
+      if (localStorage.getItem(to) === null) localStorage.setItem(to, legacy);
+      localStorage.removeItem(from);
+    });
+  } catch (_) {
+    /* storage may be blocked by privacy settings */
+  }
+}
+migrateLegacyStorage();
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $ = <T extends Element = HTMLElement>(selector: string) =>
   document.querySelector<T>(selector);
@@ -81,6 +101,39 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () 
 const header = $(".site-header");
 const navPanel = $(".nav-panel");
 const navBackdrop = $(".nav-backdrop");
+
+/* A phone switched to Chrome's "Desktop site" keeps a coarse pointer but gets
+   a desktop-width layout (commonly 980px). There the CSS-only :hover dropdown
+   is unreachable: tapping the parent follows its link right away. On coarse
+   pointers with the desktop nav we switch to tap-to-open - the first tap
+   reveals the submenu, a second tap on the parent follows the link. */
+const coarsePointerMq = window.matchMedia("(hover: none), (pointer: coarse)");
+const desktopNavMq = window.matchMedia("(min-width: 901px)");
+
+function closeSubmenus(except?: Element | null): void {
+  $$<HTMLElement>(".primary-nav > ul > li.is-open").forEach((li) => {
+    if (except && li === except) return;
+    li.classList.remove("is-open");
+    li.querySelector<HTMLAnchorElement>(":scope > a")?.setAttribute("aria-expanded", "false");
+  });
+}
+
+function initSubmenuAccessibility(): void {
+  $$<HTMLElement>(".primary-nav > ul > li").forEach((li) => {
+    const submenu = li.querySelector(":scope > .submenu");
+    const link = li.querySelector<HTMLAnchorElement>(":scope > a");
+    if (!submenu || !link) return;
+    link.setAttribute("aria-haspopup", "true");
+    link.setAttribute("aria-expanded", "false");
+    li.addEventListener("mouseenter", () => link.setAttribute("aria-expanded", "true"));
+    li.addEventListener("mouseleave", () => {
+      if (!li.classList.contains("is-open")) link.setAttribute("aria-expanded", "false");
+    });
+  });
+  [coarsePointerMq, desktopNavMq].forEach((mq) =>
+    mq.addEventListener("change", () => closeSubmenus()),
+  );
+}
 
 function markActiveMenu(): void {
   // Visual "current page" highlighting is intentionally disabled: on the home
@@ -165,6 +218,29 @@ function openSearch(): void {
 document.addEventListener("click", (event) => {
   const target = event.target as Element;
   if (!target) return;
+  /* Coarse pointer + desktop layout: hover cannot open a dropdown, so the
+     first tap opens it and only a second tap on the parent navigates. Tapping
+     anywhere else closes the open submenu. */
+  if (coarsePointerMq.matches && desktopNavMq.matches) {
+    const parentLink = target.closest<HTMLAnchorElement>(".primary-nav > ul > li > a");
+    const parentLi = parentLink?.closest<HTMLElement>("li");
+    const submenu = parentLi?.querySelector(":scope > .submenu");
+    if (parentLink && parentLi && submenu) {
+      const wasOpen = parentLi.classList.contains("is-open");
+      closeSubmenus();
+      const href = parentLink.getAttribute("href") || "";
+      const canNavigate = href !== "" && href !== "#" && !href.startsWith("javascript:");
+      if (!wasOpen) {
+        event.preventDefault();
+        parentLi.classList.add("is-open");
+        parentLink.setAttribute("aria-expanded", "true");
+      } else if (!canNavigate) {
+        event.preventDefault();
+      }
+      return;
+    }
+    closeSubmenus();
+  }
   /* Tapping anything behind the open drawer - the header, the brand capsule,
      the backdrop - closes it instead of following the link underneath. */
   if (
@@ -215,7 +291,10 @@ document.addEventListener("click", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") setDrawer(false);
+  if (event.key === "Escape") {
+    setDrawer(false);
+    closeSubmenus();
+  }
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
     event.preventDefault();
     openSearch();
@@ -236,6 +315,7 @@ document.addEventListener(
 );
 
 markActiveMenu();
+initSubmenuAccessibility();
 setDrawer(false);
 
 /* In "back to list" mode the home page button points down and reads "返回文章
@@ -1545,6 +1625,60 @@ function initActivityPanel(): void {
   if (typeof wide.addEventListener === "function") wide.addEventListener("change", schedule);
 }
 
+/* ------------------------------------------------------------------ *
+ * 轻言 / plugin-hitokoto-hub. The first sentence is server-rendered via
+ * hitokotoFinder, so it is visible (and indexable) without JS. "换一句"
+ * only refreshes it through the plugin's public, anonymous REST API.
+ * ------------------------------------------------------------------ */
+function initHitokoto(): void {
+  const card = $<HTMLElement>("[data-hitokoto]");
+  const button = $<HTMLButtonElement>("[data-hitokoto-refresh]");
+  const content = $<HTMLElement>("[data-hitokoto-content]");
+  const author = $<HTMLElement>("[data-hitokoto-author]");
+  if (!card || !button || !content) return;
+
+  const endpoint = "/apis/public.api.hitokotohub.puresky.top/v1alpha1/sentence/random?limit=1";
+  button.addEventListener("click", async () => {
+    if (button.disabled) return;
+    button.disabled = true;
+    try {
+      const response = await fetch(endpoint, { headers: { Accept: "application/json" } });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const payload: unknown = await response.json();
+      /* Hitokoto Hub 3.x returns { categoryName, returned, sentences: [] };
+         keep the other shapes for older/newer releases of the plugin. */
+      const candidate = payload as {
+        items?: unknown[];
+        data?: unknown[];
+        sentences?: unknown[];
+        content?: string;
+        author?: string;
+        source?: string;
+      };
+      const list = Array.isArray(payload)
+        ? (payload as unknown[])
+        : Array.isArray(candidate.sentences)
+          ? candidate.sentences
+          : Array.isArray(candidate.items)
+            ? candidate.items
+            : Array.isArray(candidate.data)
+              ? candidate.data
+              : [candidate];
+      const quote = list[0] as typeof candidate | undefined;
+      if (!quote || typeof quote.content !== "string" || !quote.content) throw new Error("empty quote");
+      content.textContent = quote.content;
+      if (author) {
+        const by = quote.author || quote.source || "";
+        author.textContent = by ? `— ${by}` : "";
+      }
+    } catch (_) {
+      toast("一言暂时无法刷新，稍后再试试");
+    } finally {
+      button.disabled = false;
+    }
+  });
+}
+
 function boot(): void {
   initHeroHeader();
   initAuthEntry();
@@ -1562,6 +1696,7 @@ function boot(): void {
   initHeatmap();
   initExternalLinks();
   initFooter();
+  initHitokoto();
   initMbtiCard();
   initActivityPanel();
   $$("[data-current-year]").forEach((el) => (el.textContent = String(new Date().getFullYear())));

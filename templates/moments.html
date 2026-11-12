@@ -1,0 +1,73 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
+  <th:block th:fragment="head">
+    <title th:text="|瞬间 - ${site.title}|">瞬间 - 熹屿 Xiyu</title>
+    <th:block th:if="${theme.config.seo.enable_metadata != false}">
+  <link rel="canonical" th:href="${site.url + '/moments'}" />
+  <meta property="og:type" th:content="website" />
+  <meta property="og:site_name" th:content="${site.title}" />
+  <meta property="og:title" th:content="|瞬间 - ${site.title}|" />
+  <meta property="og:url" th:content="${site.url + '/moments'}" />
+  <meta property="og:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta property="og:image" th:if="${site.logo}" th:content="${site.logo}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" th:content="|瞬间 - ${site.title}|" />
+  <meta name="twitter:description" th:if="${site.subtitle}" th:content="${site.subtitle}" />
+  <meta name="twitter:image" th:if="${site.logo}" th:content="${site.logo}" />
+</th:block>
+
+  </th:block>
+
+  <!-- plugin-moments list route /moments. Variables `moments` (paged) and
+       `tags` are supplied by the plugin; the theme ships this template so the
+       route has something to render. -->
+  <th:block th:fragment="content">
+    <div class="shell moments-page" th:with="activeTag=${param.tag == null or #lists.isEmpty(param.tag) ? '' : param.tag[0]}">
+      <div class="page-head">
+        <nav class="breadcrumb" aria-label="面包屑"><a th:href="@{/}">首页</a><span>/</span><span>瞬间</span></nav>
+        <h1>瞬间</h1>
+        <p>随手记下的图文、视频与声音。</p>
+      </div>
+
+      <div class="moment-toolbar" th:if="${tags != null and not #lists.isEmpty(tags)}">
+        <a class="chip" th:classappend="${#strings.isEmpty(activeTag)} ? 'is-active' : ''" th:href="@{/moments}">全部</a>
+        <a class="chip" th:each="t : ${tags}"
+           th:classappend="${activeTag == t.name} ? 'is-active' : ''"
+           th:href="@{/moments(tag=${t.name})}" th:text="${t.name}">标签</a>
+      </div>
+
+      <div class="moment-feed" th:if="${moments != null and not #lists.isEmpty(moments.items)}">
+        <article class="moment-card" th:each="m : ${moments.items}" th:with="c=${m.spec.content}">
+          <div class="moment-card-head">
+            <img th:if="${m.owner != null and not #strings.isEmpty(m.owner.avatar)}" th:src="${m.owner.avatar}" th:alt="${m.owner.displayName}" loading="lazy" />
+            <span class="moment-owner" th:text="${m.owner != null ? m.owner.displayName : '博主'}">博主</span>
+            <time th:text="${#strings.length(m.spec.releaseTime ?: '') >= 10 ? #strings.substring(m.spec.releaseTime, 0, 10) : (m.spec.releaseTime ?: '')}">2026-01-01</time>
+            <a class="moment-permalink" th:href="@{|/moments/${m.metadata.name}|}">详情 →</a>
+          </div>
+          <div class="moment-content" th:if="${not #strings.isEmpty(c.html)}" th:utext="${c.html}"></div>
+          <div class="moment-media-grid" th:if="${not #lists.isEmpty(c.medium)}">
+            <th:block th:each="media : ${c.medium}">
+              <img th:if="${media.type.name == 'PHOTO'}" th:src="${media.url}" alt="瞬间图片" loading="lazy" />
+              <video th:if="${media.type.name == 'VIDEO'}" th:src="${media.url}" controls preload="metadata"></video>
+              <audio th:if="${media.type.name == 'AUDIO'}" th:src="${media.url}" controls></audio>
+            </th:block>
+          </div>
+          <div class="moment-tags" th:if="${not #lists.isEmpty(m.spec.tags)}">
+            <a class="chip" th:each="tagName : ${m.spec.tags}" th:href="@{/moments(tag=${tagName})}" th:text="${tagName}">标签</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="empty-state" th:unless="${moments != null and not #lists.isEmpty(moments.items)}">
+        <svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg>
+        <p>还没有发布瞬间。</p>
+      </div>
+
+      <nav class="pagination" th:if="${moments != null and (moments.hasPrevious() or moments.hasNext())}" aria-label="分页导航">
+        <a th:if="${moments.hasPrevious()}" th:href="@{${moments.prevUrl}}"><svg class="icon" aria-hidden="true"><use href="#i-arrow-left"></use></svg>上一页</a>
+        <span class="page-num" th:text="|${moments.page} / ${moments.totalPages}|">1 / 1</span>
+        <a th:if="${moments.hasNext()}" th:href="@{${moments.nextUrl}}">下一页<svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg></a>
+      </nav>
+    </div>
+  </th:block>
+</html>

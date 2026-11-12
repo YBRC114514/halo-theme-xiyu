@@ -13,7 +13,12 @@
         r.classList.add("js");
         var attr = r.getAttribute("data-color-scheme") || "auto";
         var saved = null;
-        try { saved = localStorage.getItem("azure-isle-scheme"); } catch (e) {}
+        try {
+          /* xiyu- is the canonical prefix since 1.0.16; read the legacy
+             azure-isle- value once as a fallback so returning visitors do
+             not see a flash before main.ts migrates and removes it. */
+          saved = localStorage.getItem("xiyu-scheme") || localStorage.getItem("azure-isle-scheme");
+        } catch (e) {}
         var mode = saved === "system" || saved === "light" || saved === "dark"
           ? saved
           : (attr === "auto" ? "system" : attr);
@@ -23,8 +28,8 @@
         r.classList.add("color-scheme-" + finalAttr);
       })();
     </script>
-    <script type="module" crossorigin src="/themes/theme-xiyu/assets/layout-B3EYXBkf.js"></script>
-    <link rel="stylesheet" crossorigin href="/themes/theme-xiyu/assets/layout-BcD0RqTR.css">
+    <script type="module" crossorigin src="/themes/theme-xiyu/assets/layout-D4TGcfhI.js"></script>
+    <link rel="stylesheet" crossorigin href="/themes/theme-xiyu/assets/layout-o80N9CP2.css">
   </head>
   <body th:attr="data-show-reveal=${theme.config.features.show_reveal != false}, data-code-copy=${theme.config.features.show_code_copy != false}">
     <svg class="svg-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -187,8 +192,12 @@
             </span>
           </span>
         </div>
+        <div class="footer-plugin-links" th:if="${theme.config.plugins != null and theme.config.plugins.show_plugin_links != false}">
+          <a th:if="${pluginFinder.available('PluginMoments')}" th:href="@{/moments}">瞬间</a>
+          <a th:if="${pluginFinder.available('hitokoto-hub')}" th:href="@{/hitokoto}">轻言</a>
+        </div>
         <halo:footer />
-        <div class="footer-data" hidden aria-hidden="true" th:if="${postFinder != null}">
+        <div class="footer-data" hidden aria-hidden="true" th:if="${postFinder != null and theme.config.footer.show_footer_stats != false}">
           <span th:each="p : ${postFinder.listAll()}" th:attr="data-href=${p.status.permalink}, data-title=${p.spec.title}, data-published=${#temporals.format(p.spec.publishTime, 'yyyy-MM-dd')}, data-visit=${p.stats.visit}, data-comment=${p.stats.comment}"></span>
         </div>
       </div>

@@ -66,6 +66,31 @@
   --header-h: 68px;
   --shell: 1240px;
   --ease: cubic-bezier(0.22, 0.75, 0.28, 1);
+
+  /* plugin-comment-next inherits Halo's comment-widget tokens; point them at
+     the theme palette so the widget follows the light/dark switch. */
+  --halo-cw-primary-1-color: var(--accent);
+  --halo-cw-primary-2-color: color-mix(in srgb, var(--accent) 30%, var(--surface));
+  --halo-cw-primary-3-color: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  --halo-cw-text-1-color: var(--text);
+  --halo-cw-text-2-color: var(--text-secondary);
+  --halo-cw-text-3-color: var(--text-muted);
+  --halo-cw-muted-1-color: var(--border-strong);
+  --halo-cw-muted-2-color: var(--border);
+  --halo-cw-muted-3-color: var(--surface);
+  --halo-cw-base-rounded: var(--radius-sm);
+  --halo-cw-avatar-rounded: 999px;
+  --halo-cw-avatar-size: 36px;
+  --halo-cw-base-font-size: 1rem;
+  --halo-cw-base-font-family: inherit;
+  --comment-next-bg-color: var(--surface);
+  --comment-next-text-color: var(--text);
+  --comment-next-muted-color: var(--text-muted);
+  --comment-next-border-color: var(--border);
+  --comment-next-radius-lg: var(--radius);
+  --comment-ranking-accent-color: var(--accent);
+  --comment-ranking-surface-color: var(--surface);
+  --comment-ranking-text-color: var(--text);
 }
 
 :root[data-color-scheme="dark"] {
@@ -190,6 +215,17 @@ ul, ol { padding-left: 1.3em; }
 }
 .primary-nav .submenu a { display: block; border-radius: 8px; padding: 7px 12px; font-weight: 500; }
 .primary-nav .submenu a::after { display: none; }
+/* Coarse pointer + desktop layout (a phone in Chrome's "Desktop site" mode):
+   hover never fires, so JS toggles .is-open - first tap opens, second tap
+   follows the parent link. See initSubmenuAccessibility() in main.ts.
+   Kept after the base rules so the larger touch targets are not overridden. */
+@media (min-width: 901px) and (hover: none), (min-width: 901px) and (pointer: coarse) {
+  .primary-nav > ul > li.is-open > .submenu { opacity: 1; visibility: visible; transform: translateY(0) scale(1); pointer-events: auto; }
+  .primary-nav > ul > li.is-open > a { color: var(--accent); }
+  .primary-nav > ul > li > a > .icon { transition: transform 0.25s var(--ease); }
+  .primary-nav > ul > li.is-open > a > .icon { transform: rotate(180deg); }
+  .primary-nav .submenu a { padding: 10px 14px; }
+}
 .mobile-actions { display: none; padding: 4px 6px; gap: 2px; }
 .nav-toggle { display: none; }
 .nav-backdrop { display: none; }
@@ -1340,4 +1376,48 @@ body.drawer-open #main-content::after {
   .site-header.is-hero-top .brand-pill { opacity: 0; transform: translateY(-12px) scale(0.94); pointer-events: none; }
   .site-header.is-hero-top .nav-panel,
   .site-header.is-hero-top.is-scrolled .nav-panel { transform: translateX(var(--nav-shift, 0px)); }
+}
+
+/* ---------- optional plugin widgets: 轻言 / 瞬间 / 评论读者榜 ---------- */
+.hitokoto-card { display: grid; gap: 10px; }
+.hitokoto-card blockquote { margin: 0; font-size: 0.98rem; line-height: 1.75; color: var(--text); }
+.hitokoto-card .hitokoto-meta { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--text-muted); font-size: 0.82rem; }
+.hitokoto-card .hitokoto-author { max-width: 68%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hitokoto-refresh { display: inline-flex; align-items: center; gap: 5px; padding: 5px 10px; border: 1px solid var(--border); border-radius: var(--radius-pill); background: var(--surface-muted); color: var(--text-secondary); font-size: 0.8rem; cursor: pointer; }
+.hitokoto-refresh:hover { color: var(--accent); border-color: var(--accent); }
+.hitokoto-refresh[disabled] { opacity: 0.55; cursor: progress; }
+.hitokoto-refresh .icon { width: 14px; height: 14px; }
+.widget-more { display: inline-block; margin-top: 10px; font-size: 0.82rem; color: var(--accent); }
+.moment-widget .moment-list { display: grid; gap: 12px; }
+.moment-item { border-left: 2px solid var(--border-strong); padding-left: 10px; }
+.moment-item time { display: block; margin-bottom: 4px; font-size: 0.76rem; color: var(--text-muted); }
+.moment-item p { margin: 0; font-size: 0.88rem; line-height: 1.6; color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.moment-item p a { color: var(--accent); }
+.ranking-widget comment-ranking-sidebar { display: block; min-height: 60px; }
+.footer-plugin-links { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 10px; font-size: 0.84rem; }
+.footer-plugin-links:empty { display: none; }
+.footer-plugin-links a { color: var(--text-muted); }
+.footer-plugin-links a:hover { color: var(--accent); }
+
+/* ---------- plugin-moments pages: /moments and /moments/{name} ---------- */
+.moment-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; }
+.moment-feed { display: grid; gap: 18px; }
+.moment-card { padding: 20px 22px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+.moment-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.84rem; color: var(--text-muted); }
+.moment-card-head img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
+.moment-card-head .moment-owner { color: var(--text-secondary); font-weight: 600; }
+.moment-card-head .moment-permalink { margin-left: auto; color: var(--accent); }
+.moment-content { line-height: 1.85; color: var(--text); overflow-wrap: anywhere; }
+.moment-content img, .moment-content video { display: block; max-width: 100%; margin: 10px 0; border-radius: var(--radius-sm); }
+.moment-content audio { width: 100%; margin: 8px 0; }
+.moment-media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-top: 12px; }
+.moment-media-grid img, .moment-media-grid video { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); }
+.moment-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.moment-tags .chip { padding: 3px 9px; font-size: 0.78rem; }
+.moment-detail .moment-card { padding: 26px 28px; }
+.moment-back { margin-top: 20px; font-size: 0.9rem; }
+.moment-back a { color: var(--accent); }
+@media (max-width: 640px) {
+  .moment-card { padding: 16px; }
+  .moment-media-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }

@@ -501,28 +501,8 @@ spec:
               value: compact
             - label: 标准
               value: roomy
-        - $formkit: select
-          name: posts_per_page
-          label: 首页每页文章数
-          help: 只影响首页列表；分类、标签、归档与作者页仍沿用 Halo 系统设置
-          value: "10"
-          options:
-            - label: 6 篇
-              value: "6"
-            - label: 8 篇
-              value: "8"
-            - label: 9 篇（三列正好三行）
-              value: "9"
-            - label: 10 篇
-              value: "10"
-            - label: 12 篇
-              value: "12"
-            - label: 15 篇
-              value: "15"
-            - label: 18 篇
-              value: "18"
-            - label: 24 篇
-              value: "24"
+        # 首页每页文章数由 Halo 后台「设置 → 文章设置」统一控制。
+        # 主题不再提供独立选项：与站点分页大小不一致时会出现空白分页页。
         - $formkit: switch
           name: show_cover
           label: 显示文章封面
@@ -825,4 +805,64 @@ spec:
           name: enable_structured_data
           label: 输出文章结构化数据（JSON-LD）
           help: 若已由插件提供同类标签，请关闭此项
+          value: true
+
+    # ------------------------------------------------------------------
+    # 11. 插件联动 —— 仅在对应插件已安装并启用时生效
+    # ------------------------------------------------------------------
+    - group: plugins
+      label: 插件联动
+      formSchema:
+        - $formkit: switch
+          name: show_hitokoto
+          label: 侧栏显示「一言」
+          help: 需启用 plugin-hitokoto-hub（轻言）。首句由服务端 Finder 输出，「换一句」走插件公开 API；插件未安装时不渲染
+          value: false
+        - $formkit: switch
+          name: show_moments
+          label: 侧栏显示「最新瞬间」
+          help: 需启用 plugin-moments。完整列表在 /moments，请自行把该地址加入 Halo 菜单；插件未安装时不渲染
+          value: false
+        - $formkit: select
+          name: moments_sidebar_count
+          label: 侧栏瞬间条数
+          value: "3"
+          options:
+            - label: 1 条
+              value: "1"
+            - label: 2 条
+              value: "2"
+            - label: 3 条
+              value: "3"
+            - label: 5 条
+              value: "5"
+        - $formkit: switch
+          name: show_comment_ranking
+          label: 侧栏显示「评论读者榜」
+          help: 需启用 plugin-comment-next（评论组件 Next），由插件自带的 comment-ranking-sidebar 组件渲染
+          value: false
+        - $formkit: select
+          name: comment_ranking_period
+          label: 读者榜统计周期
+          value: "month"
+          options:
+            - label: 本月
+              value: "month"
+            - label: 本年
+              value: "year"
+        - $formkit: select
+          name: comment_ranking_limit
+          label: 读者榜人数
+          value: "5"
+          options:
+            - label: 3 人
+              value: "3"
+            - label: 5 人
+              value: "5"
+            - label: 10 人
+              value: "10"
+        - $formkit: switch
+          name: show_plugin_links
+          label: 页脚显示插件页面入口
+          help: 在页脚追加「瞬间」「轻言」链接，仅对应插件已启用时才显示
           value: true
