@@ -809,6 +809,17 @@ spec:
           name: intro_desc
           label: 上半区说明
           value: "如果你的站点也在认真记录点什么，欢迎按下方规则申请互换链接。"
+        - $formkit: attachment
+          name: site_icon
+          label: 站点信息 · 图标
+          help: 显示在友链页「站点信息」第一行，方便访客一键复制后填进友链申请；留空则用 Halo 后台「设置 → 基本设置 → 站点图标」，再没有就用站点 Logo
+          width: 6rem
+          value: ""
+        - $formkit: text
+          name: site_icon_url
+          label: 站点信息 · 图标地址
+          help: 填完整图片网址时优先于上面的附件，适合把图标放在图床 / CDN
+          value: ""
         - $formkit: text
           name: site_name
           label: 站点信息 · 名称
