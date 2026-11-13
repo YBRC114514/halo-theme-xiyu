@@ -30,7 +30,9 @@
           <a th:each="cat : ${post.categories}" th:href="@{${cat.status.permalink}}" th:text="${cat.spec.displayName}">分类</a>
         </div>
         <h1 class="article-hero-title" th:text="${post.spec.title}">文章标题</h1>
-        <p class="article-hero-excerpt" th:if="${not #strings.isEmpty(post.status.excerpt)}" th:text="${post.status.excerpt}">文章摘要</p>
+        <div class="article-hero-tags" th:if="${not #lists.isEmpty(post.tags)}">
+          <a th:each="tag : ${post.tags}" th:href="@{${tag.status.permalink}}" th:text="|# ${tag.spec.displayName}|"># 标签</a>
+        </div>
       </div>
       <div class="article-hero-foot">
         <div class="article-hero-byline" th:if="${post.owner != null}">
@@ -91,7 +93,7 @@
             </div>
 
             <footer class="article-footer">
-              <div class="article-tags" th:if="${not #lists.isEmpty(post.tags)}">
+              <div class="article-tags" th:if="${not heroCover and not #lists.isEmpty(post.tags)}">
                 <a class="chip" th:each="tag : ${post.tags}" th:href="@{${tag.status.permalink}}" th:text="|# ${tag.spec.displayName}|"># 标签</a>
               </div>
               <div class="post-meta"><span>最后更新于 <time th:text="${#temporals.format(post.status.lastModifyTime ?: post.spec.publishTime, 'yyyy-MM-dd')}">2026-01-01</time></span></div>
