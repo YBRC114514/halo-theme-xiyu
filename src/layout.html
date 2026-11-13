@@ -75,10 +75,14 @@
 
     <header class="site-header">
       <div class="shell">
-        <a class="brand-pill" th:href="@{/}" th:with="brandName = ${theme.config.home.brand_title ?: theme.config.home.hero_title ?: site.title}, brandImg = ${theme.config.home.brand_logo ?: site.logo}">
-          <img th:if="${not #strings.isEmpty(brandImg)}" th:src="${brandImg}" th:alt="${brandName}" />
-          <span class="brand-mark" th:unless="${not #strings.isEmpty(brandImg)}" th:text="${#strings.isEmpty(brandName) ? '青' : #strings.substring(brandName, 0, 1)}">青</span>
-          <span class="brand-text" th:text="${brandName}">熹屿 Xiyu</span>
+        <a class="brand-pill" th:href="@{/}" th:classappend="${theme.config.home.brand_hide_text} ? 'no-text' : ''" th:with="brandName = ${theme.config.home.brand_title ?: theme.config.home.hero_title ?: site.title},
+            brandSvgRaw = ${theme.config.home.brand_logo_svg ?: ''},
+            brandSvg = ${#strings.contains(brandSvgRaw, '&lt;svg') and not #strings.contains(brandSvgRaw, '&lt;script') and not #strings.contains(brandSvgRaw, 'javascript:') and not #strings.contains(brandSvgRaw, ' onload=') and not #strings.contains(brandSvgRaw, ' onerror=') ? brandSvgRaw : ''},
+            brandImg = ${theme.config.home.brand_logo_url ?: theme.config.home.brand_logo ?: site.logo}">
+          <span class="brand-svg" th:if="${not #strings.isEmpty(brandSvg)}" th:utext="${brandSvg}"></span>
+          <img th:if="${#strings.isEmpty(brandSvg) and not #strings.isEmpty(brandImg)}" th:src="${brandImg}" th:alt="${brandName}" th:classappend="${#strings.contains(brandImg, '.svg')} ? 'brand-img-svg' : ''" />
+          <span class="brand-mark" th:if="${#strings.isEmpty(brandSvg) and #strings.isEmpty(brandImg)}" th:text="${#strings.isEmpty(brandName) ? '青' : #strings.substring(brandName, 0, 1)}">青</span>
+          <span class="brand-text" th:unless="${theme.config.home.brand_hide_text}" th:text="${brandName}">熹屿 Xiyu</span>
         </a>
 
         <div class="nav-panel" id="nav-panel">

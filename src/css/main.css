@@ -185,6 +185,13 @@ ul, ol { padding-left: 1.3em; }
 .brand-pill { flex: none; gap: 10px; padding: 6px 18px 6px 7px; font-weight: 800; font-size: 1.04rem; letter-spacing: 0.01em; }
 .brand-pill:hover { transform: translateY(-2px); }
 .brand-pill img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+/* SVG 标识按高度等比缩放（宽幅 logo / 字样不再被压成小方块），不裁切 */
+.brand-pill img.brand-img-svg { width: auto; height: 32px; max-width: 168px; border-radius: 6px; object-fit: contain; }
+.brand-svg { display: flex; align-items: center; flex: none; height: 32px; color: var(--accent); }
+.brand-svg svg { display: block; width: auto; height: 32px; max-width: 168px; }
+.brand-svg svg:not([fill]) { fill: currentColor; }
+/* 只放标识、不显示站名时收紧内边距 */
+.brand-pill.no-text { padding: 6px; }
 .brand-mark { display: grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--mint)); color: #fff; font-size: 1rem; font-weight: 800; }
 .brand-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
 .nav-panel { flex: 0 1 auto; gap: 4px; padding: 5px 8px 5px 12px; }
@@ -702,6 +709,14 @@ html.js [data-reveal] { transition-delay: var(--reveal-delay, 0ms); }
   .primary-nav .submenu a { padding: 7px 12px; font-size: 0.88rem; }
   .mobile-actions { display: inline-flex; }
   .nav-toggle { display: inline-grid; }
+  /* 品牌胶囊与按钮组统一高度、统一纵向位置，避免一高一矮 */
+  .brand-pill, .mobile-actions { min-height: 44px; }
+  .brand-pill { padding-top: 0; padding-bottom: 0; }
+  .brand-pill img { width: 32px; height: 32px; }
+  /* 宽幅 SVG 标识在窄屏收一档，避免把页头挤出去 */
+  .brand-pill img.brand-img-svg { height: 26px; max-width: 96px; }
+  .brand-svg { height: 26px; }
+  .brand-svg svg { height: 26px; max-width: 96px; }
   .nav-backdrop { display: block; position: fixed; inset: 0; z-index: 95; background: transparent; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s; }
   .nav-backdrop.is-open { opacity: 1; visibility: visible; }
   .author-hero, .contribution-card, .links-hero { grid-template-columns: minmax(0, 1fr); }
