@@ -395,12 +395,6 @@ spec:
           label: 显示「Powered by Halo · XiYu」
           help: 关闭后页脚只保留版权与备案信息
           value: true
-        - $formkit: text
-          name: theme_repo_url
-          label: 主题仓库链接
-          help: 页脚「XiYu」指向的地址；改主题名或换了仓库时在这里调整
-          value: "https://github.com/YBRC114514/halo-theme-xiyu"
-
         - $formkit: textarea
           name: friends_desc
           label: 朋友圈页面说明
@@ -454,6 +448,18 @@ spec:
               value: normal
             - label: 偏大
               value: large
+        - $formkit: radio
+          name: cover_style
+          label: 文章封面样式
+          help: 「顶部横幅」把封面铺满页面顶部，标题、分类、摘要与作者信息叠在图上，正文卡片上浮压住底边；「正文内嵌」是原来的样子，封面作为正文里的一张图显示
+          value: banner
+          options:
+            - label: 顶部横幅（沉浸式）
+              value: banner
+            - label: 正文内嵌（原样式）
+              value: inline
+        # 文章排版样式不再由主题设置统一指定，改为在文章编辑页
+        # 「自定义文章模板」中逐篇选择（见 theme.yaml customTemplates.post）。
 
     # ------------------------------------------------------------------
     # 6. 布局
@@ -734,14 +740,49 @@ spec:
     - group: links
       label: 友链页
       formSchema:
+        - $formkit: radio
+          name: apply_provider
+          label: 友链申请方式
+          help: 选择由哪个插件接收友链申请。两个插件都需要自行安装并启用，主题只负责前台表单；切换后请刷新友链页
+          value: "official"
+          options:
+            - label: 官方链接插件（PluginLinks）
+              value: "official"
+            - label: LinksSubmit（木因插件）
+              value: "linkssubmit"
+        - $formkit: radio
+          name: linkssubmit_mode
+          label: LinksSubmit 表单
+          help: 「主题表单」由本主题绘制并调用插件的 LinksSubmit 全局 API；「插件弹窗」直接打开插件自带的提交框（需把插件设置为弹窗形式并挂载到友链页）
+          value: "theme"
+          options:
+            - label: 主题表单（推荐，样式统一）
+              value: "theme"
+            - label: 插件自带弹窗
+              value: "overlay"
+        - $formkit: radio
+          name: linkssubmit_verify
+          label: LinksSubmit 验证码
+          help: 仅「主题表单」模式生效；图形验证码无需配置邮箱，邮箱验证码需要插件已配好邮件通知
+          value: "captcha"
+          options:
+            - label: 图形验证码
+              value: "captcha"
+            - label: 邮箱验证码
+              value: "email"
         - $formkit: text
           name: apply_url
           label: 友链申请备用地址
-          help: 官方链接插件开启「启用友链申请」后，按钮会直接打开内置申请表单（含验证码）；此处仅在未开启时作为跳转地址
+          help: 未检测到所选插件时的跳转地址；留空则在按钮上提示站主启用插件
           value: ""
         - $formkit: switch
           name: show_random
           label: 显示「随机访问」按钮
+          value: true
+        - $formkit: switch
+          name: random_anim
+          label: 「随机访问」抽签动画
+          help: 点击后先在友链卡片间快速轮播高亮，慢下来停在中签站点再跳转；关闭则立即跳转。系统开启「减少动态效果」时动画自动跳过
           value: true
         - $formkit: text
           name: intro_title
@@ -861,8 +902,3 @@ spec:
               value: "5"
             - label: 10 人
               value: "10"
-        - $formkit: switch
-          name: show_plugin_links
-          label: 页脚显示插件页面入口
-          help: 在页脚追加「瞬间」「轻言」链接，仅对应插件已启用时才显示
-          value: true

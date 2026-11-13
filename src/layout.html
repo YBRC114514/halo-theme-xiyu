@@ -188,13 +188,9 @@
               </span>
             </th:block>
             <span class="footer-powered" th:if="${theme.config.footer.show_powered != false}">
-              Powered by <a href="https://halo.run" target="_blank" rel="noopener noreferrer">Halo</a> · <a th:href="${theme.config.footer.theme_repo_url ?: 'https://github.com/YBRC114514/halo-theme-xiyu'}" target="_blank" rel="noopener noreferrer">XiYu</a>
+              Powered by <a href="https://halo.run" target="_blank" rel="noopener noreferrer">Halo</a> · <a href="https://github.com/YBRC114514/halo-theme-xiyu" target="_blank" rel="noopener noreferrer">XiYu</a>
             </span>
           </span>
-        </div>
-        <div class="footer-plugin-links" th:if="${theme.config.plugins != null and theme.config.plugins.show_plugin_links != false}">
-          <a th:if="${pluginFinder.available('PluginMoments')}" th:href="@{/moments}">瞬间</a>
-          <a th:if="${pluginFinder.available('hitokoto-hub')}" th:href="@{/hitokoto}">轻言</a>
         </div>
         <halo:footer />
         <div class="footer-data" hidden aria-hidden="true" th:if="${postFinder != null and theme.config.footer.show_footer_stats != false}">

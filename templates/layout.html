@@ -28,8 +28,8 @@
         r.classList.add("color-scheme-" + finalAttr);
       })();
     </script>
-    <script type="module" crossorigin src="/themes/theme-xiyu/assets/layout-D4TGcfhI.js"></script>
-    <link rel="stylesheet" crossorigin href="/themes/theme-xiyu/assets/layout-o80N9CP2.css">
+    <script type="module" crossorigin src="/themes/theme-xiyu/assets/layout-DzfhmPP-.js"></script>
+    <link rel="stylesheet" crossorigin href="/themes/theme-xiyu/assets/layout-BGN-P9sC.css">
   </head>
   <body th:attr="data-show-reveal=${theme.config.features.show_reveal != false}, data-code-copy=${theme.config.features.show_code_copy != false}">
     <svg class="svg-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -188,13 +188,9 @@
               </span>
             </th:block>
             <span class="footer-powered" th:if="${theme.config.footer.show_powered != false}">
-              Powered by <a href="https://halo.run" target="_blank" rel="noopener noreferrer">Halo</a> · <a th:href="${theme.config.footer.theme_repo_url ?: 'https://github.com/YBRC114514/halo-theme-xiyu'}" target="_blank" rel="noopener noreferrer">XiYu</a>
+              Powered by <a href="https://halo.run" target="_blank" rel="noopener noreferrer">Halo</a> · <a href="https://github.com/YBRC114514/halo-theme-xiyu" target="_blank" rel="noopener noreferrer">XiYu</a>
             </span>
           </span>
-        </div>
-        <div class="footer-plugin-links" th:if="${theme.config.plugins != null and theme.config.plugins.show_plugin_links != false}">
-          <a th:if="${pluginFinder.available('PluginMoments')}" th:href="@{/moments}">瞬间</a>
-          <a th:if="${pluginFinder.available('hitokoto-hub')}" th:href="@{/hitokoto}">轻言</a>
         </div>
         <halo:footer />
         <div class="footer-data" hidden aria-hidden="true" th:if="${postFinder != null and theme.config.footer.show_footer_stats != false}">

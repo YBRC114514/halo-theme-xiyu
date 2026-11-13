@@ -786,40 +786,113 @@ html.js [data-reveal] { transition-delay: var(--reveal-delay, 0ms); }
 body:has(#main-content > .hero) .site-header::before { opacity: 0; transition: opacity 0.4s var(--ease); }
 body:has(#main-content > .hero) .site-header.is-scrolled::before { opacity: 1; }
 
-/* ---------- rounded headings inside article ---------- */
+/* ---------- 默认模板 · 毛玻璃正文（借鉴 lcrworld 的排版） ----------
+   不选自定义模板时的文章 / 独立页样式，即 Halo 文章设置里内置的
+   「默认模板」。整卡半透明毛玻璃、标题统一 4px 主题色竖条、
+   链接虚线下划线（悬停变实线）、行内代码带细边框。 */
+.article { background: color-mix(in srgb, var(--surface) 62%, transparent); border-color: color-mix(in srgb, #ffffff 55%, transparent); -webkit-backdrop-filter: blur(16px) saturate(170%); backdrop-filter: blur(16px) saturate(170%); }
+:root[data-color-scheme="dark"] .article { border-color: color-mix(in srgb, #ffffff 10%, transparent); }
+@media (prefers-color-scheme: dark) {
+  :root[data-color-scheme="auto"] .article { border-color: color-mix(in srgb, #ffffff 10%, transparent); }
+}
 .summary-card { border-radius: var(--radius); }
 .section-title::before { width: 5px; border-radius: var(--radius-pill); }
-.entry-content h2 {
-  position: relative;
-  margin: 1.9em 0 0.85em;
-  padding: 10px 16px 10px 18px;
-  border-left: 0;
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--accent) 6%, var(--surface-muted));
-  font-size: 1.42em;
-}
-.entry-content h2::before { content: ""; position: absolute; left: 0; top: 16%; bottom: 16%; width: 4px; border-radius: var(--radius-pill); background: var(--accent); }
-.entry-content h3 {
-  width: fit-content;
-  max-width: 100%;
-  margin: 1.7em 0 0.8em;
-  padding: 5px 14px;
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--mint) 20%, var(--surface-muted));
-  font-size: 1.18em;
-}
-.entry-content h4 { padding-left: 10px; border-left: 3px solid var(--mint); border-radius: var(--radius-pill); }
-.entry-content blockquote {
-  position: relative;
-  margin: 1.6em 0;
-  padding: 14px 20px 14px 24px;
-  border-left: 0;
-  border-radius: var(--radius);
-  background: color-mix(in srgb, var(--mint) 15%, var(--surface-muted));
-}
-.entry-content blockquote::before { content: ""; position: absolute; left: 0; top: 14%; bottom: 14%; width: 4px; border-radius: var(--radius-pill); background: var(--mint); }
+.entry-content { line-height: 1.82; }
+.entry-content h2,
+.entry-content h3,
+.entry-content h4 { position: relative; margin: 1.6em 0 0.7em; padding: 0 0 0 13px; border-left: 0; border-radius: 0; background: transparent; }
+.entry-content h2 { font-size: 1.3em; }
+.entry-content h3 { width: auto; font-size: 1.12em; }
+.entry-content h4 { font-size: 1.02em; }
+.entry-content h2::before,
+.entry-content h3::before,
+.entry-content h4::before { content: ""; position: absolute; left: 0; top: 0.26em; width: 4px; height: 0.95em; border-radius: 2px; background: var(--accent); }
+.entry-content a { color: var(--accent); text-decoration: none; border-bottom: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent); transition: border-bottom-style 0.2s ease; }
+.entry-content a:hover { border-bottom-style: solid; }
+.entry-content code { background: var(--surface-muted); border: 1px solid var(--border); border-radius: 5px; padding: 2px 7px; }
+.entry-content blockquote { padding: 12px 18px; border-left: 3px solid var(--accent); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; background: color-mix(in srgb, var(--accent) 5%, transparent); color: var(--text-secondary); }
+.entry-content li { margin: 0.4em 0; }
+.entry-content li::marker { color: var(--accent); }
+.entry-content hr { height: 0; border: 0; border-top: 1px solid var(--border); background: none; }
 .entry-content details { border-radius: var(--radius); }
 .entry-content th, .entry-content td { border-radius: 4px; }
+:root[data-color-scheme="dark"] .entry-content code { background: transparent; }
+@media (prefers-color-scheme: dark) {
+  :root[data-color-scheme="auto"] .entry-content code { background: transparent; }
+}
+
+/* ---------- 模板二 · Robes 排版（借鉴 robes.xin/1258.html） ----------
+   与默认模板同为毛玻璃卡片，但正文换成「下划线式 h2 + 渐变底 h3 +
+   大引号引用块 + Mac 风格代码块 + hover 展开的链接 + 圆形列表序号」。 */
+.article[data-entry-style="robes"] { background: color-mix(in srgb, var(--surface) 74%, transparent); -webkit-backdrop-filter: blur(20px) saturate(140%); backdrop-filter: blur(20px) saturate(140%); }
+.article[data-entry-style="robes"] .entry-content { line-height: 1.9; letter-spacing: 0.01em; }
+.article[data-entry-style="robes"] .entry-content p { margin-bottom: 16px; }
+.article[data-entry-style="robes"] .entry-content h2,
+.article[data-entry-style="robes"] .entry-content h3,
+.article[data-entry-style="robes"] .entry-content h4 { position: relative; margin: 1.75em 0 0.75em; padding: 0; border: 0; border-radius: 0; background: none; }
+.article[data-entry-style="robes"] .entry-content h2::before,
+.article[data-entry-style="robes"] .entry-content h3::before,
+.article[data-entry-style="robes"] .entry-content h4::before { content: none; }
+.article[data-entry-style="robes"] .entry-content h2 {
+  display: inline-block; width: auto; font-size: 1.38em; font-weight: 700;
+  letter-spacing: -0.01em; padding-bottom: 6px;
+  background: linear-gradient(var(--accent), var(--accent)) no-repeat;
+  background-size: 100% 2px; background-position: left bottom;
+}
+.article[data-entry-style="robes"] .entry-content h3 {
+  display: block; width: auto; font-size: 1.13em; font-weight: 600;
+  padding: 6px 0 6px 16px; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 10%, transparent) 0%, transparent 100%);
+}
+.article[data-entry-style="robes"] .entry-content h3::after { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 2px; background: var(--accent); }
+.article[data-entry-style="robes"] .entry-content h4 { font-size: 1em; font-weight: 600; color: var(--text-secondary); }
+.article[data-entry-style="robes"] .entry-content a {
+  color: var(--accent); font-weight: 500; padding-bottom: 2px;
+  text-decoration: none; border-bottom: 0;
+  background: linear-gradient(to right, var(--accent), var(--accent)) no-repeat;
+  background-size: 0% 1.5px; background-position: left bottom;
+  transition: background-size 0.3s ease, color 0.2s ease;
+}
+.article[data-entry-style="robes"] .entry-content a:hover { background-size: 100% 1.5px; }
+.article[data-entry-style="robes"] .entry-content code {
+  background: color-mix(in srgb, var(--accent) 9%, transparent); color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 14%, transparent);
+  border-radius: var(--radius-sm); padding: 2px 7px; font-weight: 500;
+}
+.article[data-entry-style="robes"] .entry-content pre {
+  position: relative; overflow: hidden; padding-top: 48px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--accent) 6%, transparent); color: var(--text-secondary);
+}
+.article[data-entry-style="robes"] .entry-content pre::before {
+  content: ""; position: absolute; top: 0; left: 0; right: 0; height: 32px;
+  border-bottom: 1px solid var(--border);
+  background-image: radial-gradient(circle, #ef4444 5px, transparent 5px),
+                    radial-gradient(circle, #eab308 5px, transparent 5px),
+                    radial-gradient(circle, #22c55e 5px, transparent 5px);
+  background-size: 12px 12px; background-position: 16px center, 32px center, 48px center;
+  background-repeat: no-repeat;
+}
+.article[data-entry-style="robes"] .entry-content pre code { display: block; padding: 0; border: 0; background: transparent; color: inherit; }
+.article[data-entry-style="robes"] .entry-content blockquote {
+  position: relative; overflow: hidden; margin: 1.2em 0;
+  padding: 18px 20px 18px 40px; border: 1px solid var(--border); border-left: 0;
+  border-radius: var(--radius-sm); background: color-mix(in srgb, var(--accent) 7%, transparent);
+  color: var(--text-secondary); font-size: 0.94em; line-height: 1.8;
+}
+.article[data-entry-style="robes"] .entry-content blockquote::before { content: "\201C"; position: absolute; top: 4px; left: 10px; font: 42px/1 Georgia, serif; color: var(--accent); opacity: 0.3; }
+.article[data-entry-style="robes"] .entry-content ul,
+.article[data-entry-style="robes"] .entry-content ol { padding-left: 28px; list-style: none; }
+.article[data-entry-style="robes"] .entry-content ul > li { position: relative; padding-left: 4px; margin: 0.45em 0; }
+.article[data-entry-style="robes"] .entry-content ul > li::before { content: ""; position: absolute; left: -20px; top: 0.72em; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: 0.6; }
+.article[data-entry-style="robes"] .entry-content ol { counter-reset: list-counter; }
+.article[data-entry-style="robes"] .entry-content ol > li { position: relative; padding-left: 4px; margin: 0.45em 0; counter-increment: list-counter; }
+.article[data-entry-style="robes"] .entry-content ol > li::before { content: counter(list-counter); position: absolute; left: -26px; top: 50%; transform: translateY(-50%); width: 18px; height: 18px; border-radius: 50%; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font-size: 11px; font-weight: 600; text-align: center; line-height: 18px; }
+.article[data-entry-style="robes"] .entry-content img { box-shadow: none; margin: 20px 0; }
+.article[data-entry-style="robes"] .entry-content th { background: color-mix(in srgb, var(--accent) 9%, var(--surface-muted)); color: var(--accent); }
+.article[data-entry-style="robes"] .entry-content tr:nth-child(even) { background: color-mix(in srgb, var(--text) 2%, transparent); }
+.article[data-entry-style="robes"] .entry-content tr:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+.article[data-entry-style="robes"] .entry-content hr { width: 60%; height: 1px; margin: 24px auto; border: 0; background: linear-gradient(to right, transparent, var(--border), color-mix(in srgb, var(--accent) 30%, transparent), var(--border), transparent); }
 .link-group h2 { position: relative; padding-left: 14px; border-left: 0; }
 .link-group h2::before { content: ""; position: absolute; left: 0; top: 16%; bottom: 16%; width: 5px; border-radius: var(--radius-pill); background: linear-gradient(var(--accent), var(--mint)); }
 
@@ -895,6 +968,8 @@ html.js .post-nav.is-entering, html.js .comments.is-entering { animation: articl
 [data-random-link] .icon { transition: transform 0.3s ease; }
 [data-random-link].is-rolling .icon { animation: shuffle-spin 0.6s linear infinite; }
 [data-random-link].is-rolling { filter: saturate(1.25); }
+[data-random-link].is-rolling [data-random-label] { opacity: 0.85; }
+.link-card.is-roll-hit { transform: translateY(-3px) scale(1.012); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); box-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 22%, transparent), 0 0 0 2px color-mix(in srgb, var(--accent) 34%, transparent); transition-duration: 0.1s; }
 .link-card.is-picked { border-color: var(--accent); animation: picked-pulse 0.85s var(--ease); }
 @keyframes shuffle-spin { to { transform: rotate(360deg); } }
 @keyframes picked-pulse {
@@ -948,6 +1023,74 @@ html.js .post-nav.is-entering, html.js .comments.is-entering { animation: articl
 /* ---------- article cover: show the whole image, never crop ---------- */
 .article-cover { margin: 0 0 24px; border-radius: var(--radius); overflow: hidden; background: var(--surface-muted); }
 .article-cover img { display: block; width: 100%; height: auto; max-height: none; object-fit: contain; }
+
+/* ---------- article hero: cover fills the top of the page ----------
+   封面不再是正文里的一张图，而是页面顶部的整幅横幅：图片铺满、左侧压暗，
+   分类 / 标题 / 摘要 / 作者与阅读数据叠在图上；正文卡片用负边距上浮压住底边。 */
+.article-hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: clamp(400px, 52svh, 620px);
+  margin-top: calc(-1 * var(--header-h));
+  padding: calc(var(--header-h) + 56px) 20px 58px;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(120deg, #172024, #253337);
+  color: #fff;
+}
+.article-hero-bg { position: absolute; inset: 0; z-index: -1; background-position: center 42%; background-size: cover; background-repeat: no-repeat; }
+.article-hero-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(7, 14, 18, 0.84), rgba(7, 14, 18, 0.46) 58%, rgba(7, 14, 18, 0.14)),
+    linear-gradient(rgba(7, 14, 18, 0.16) 35%, rgba(7, 14, 18, 0.88));
+}
+.article-hero-inner { position: relative; display: flex; flex-direction: column; gap: 24px; width: min(100%, var(--shell)); margin-inline: auto; }
+.article-hero-body { width: min(100%, 820px); min-width: 0; }
+.article-hero-cats { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-bottom: 14px; }
+.article-hero-cats a { padding-bottom: 2px; border-bottom: 1px solid transparent; color: rgba(255, 255, 255, 0.76); font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-decoration: none; transition: color 0.2s ease, border-color 0.2s ease; }
+.article-hero-cats a:hover { color: #fff; border-bottom-color: rgba(255, 255, 255, 0.6); }
+.article-hero-title { margin: 0; color: #fff; font-size: clamp(1.9rem, 3vw + 8px, 3.05rem); font-weight: 700; line-height: 1.34; letter-spacing: -0.01em; overflow-wrap: anywhere; text-wrap: balance; text-shadow: 0 2px 18px rgba(0, 0, 0, 0.4); }
+.article-hero-excerpt { display: -webkit-box; max-width: 660px; margin: 16px 0 0; overflow: hidden; color: rgba(255, 255, 255, 0.75); font-size: 0.9rem; line-height: 1.85; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+.article-hero-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 26px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, 0.18); }
+.article-hero-byline { display: flex; align-items: center; gap: 11px; min-width: 0; }
+.article-hero-byline img, .article-hero-avatar { width: 36px; height: 36px; flex: none; border: 2px solid rgba(255, 255, 255, 0.32); border-radius: 50%; object-fit: cover; }
+.article-hero-avatar { display: grid; place-items: center; background: rgba(255, 255, 255, 0.16); font-size: 0.9rem; font-weight: 700; }
+.article-hero-author { display: grid; gap: 3px; min-width: 0; }
+.article-hero-author a { color: #fff; font-size: 0.8rem; font-weight: 600; text-decoration: none; }
+.article-hero-author a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.article-hero-author time { color: rgba(255, 255, 255, 0.6); font-size: 0.72rem; font-variant-numeric: tabular-nums; }
+.article-hero-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; margin: 0; padding: 0; list-style: none; }
+.article-hero-meta li { display: inline-flex; align-items: center; gap: 6px; color: rgba(255, 255, 255, 0.74); font-size: 0.76rem; font-variant-numeric: tabular-nums; }
+.article-hero-meta .icon { width: 14px; height: 14px; opacity: 0.72; }
+.article-hero::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  height: 56px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), var(--bg));
+  pointer-events: none;
+}
+.shell.shell-over-hero { position: relative; z-index: 2; margin-top: -46px; }
+.shell.shell-over-hero .content-grid { padding-top: 0; }
+/* 面包屑导航栏原本带一层背景色渐变，压在深色横幅上会发白，这里换成暗色 */
+html:has(.article-hero) .site-header::before { background: linear-gradient(to bottom, rgba(9, 16, 20, 0.5), transparent); }
+
+@media (max-width: 900px) {
+  .article-hero { min-height: clamp(300px, 44svh, 430px); padding: calc(var(--header-h) + 30px) 16px 40px; }
+  .article-hero-inner { gap: 18px; }
+  .article-hero-title { font-size: clamp(1.55rem, 6vw + 2px, 2.05rem); line-height: 1.38; }
+  .article-hero-excerpt { margin-top: 12px; font-size: 0.84rem; -webkit-line-clamp: 2; }
+  .article-hero-foot { padding-top: 14px; gap: 12px 18px; }
+  .shell.shell-over-hero { margin-top: -28px; }
+  .article-hero::after { height: 30px; }
+}
 .entry-content img { max-width: 100%; height: auto; }
 .entry-content figure[data-content-type="image"] { align-items: center; }
 .entry-content figure[data-content-type="image"] img { margin: 0 auto; }
@@ -1138,6 +1281,20 @@ html.js .post-nav.is-entering, html.js .comments.is-entering { animation: articl
 .apply-captcha-refresh:hover { color: var(--accent); }
 .apply-captcha-refresh .icon { width: 16px; height: 16px; }
 .apply-captcha input { flex: 1; min-width: 0; }
+/* LinksSubmit: 分组下拉与「发送邮箱验证码」按钮（官方插件模式下由 JS 隐藏） */
+.apply-group-row { margin-top: 12px; }
+.apply-group-row label { display: grid; gap: 6px; font-size: 0.84rem; color: var(--text-secondary); }
+.apply-group-row select {
+  width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface-muted); color: var(--text); font: inherit; font-size: 0.9rem;
+}
+.apply-group-row select:focus { outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 1px; }
+.apply-code-send {
+  flex: none; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--accent); font: inherit; font-size: 0.82rem; cursor: pointer;
+}
+.apply-code-send:hover { border-color: var(--accent); }
+.apply-code-send:disabled { opacity: 0.6; cursor: progress; }
 .apply-message { margin: 12px 0 0; padding: 9px 12px; border-radius: var(--radius-sm); font-size: 0.86rem; background: color-mix(in srgb, var(--accent) 10%, transparent); }
 .apply-message.is-error { background: rgba(214, 69, 69, 0.12); color: #b42323; }
 .apply-actions { display: flex; justify-content: flex-end; margin-top: 18px; }
@@ -1351,12 +1508,18 @@ html.drawer-lock { overflow: hidden; overscroll-behavior: none; }
 html.drawer-lock body { overflow: hidden; overscroll-behavior: none; }
 html.drawer-lock .nav-panel { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 
-/* Opening the drawer used to grey the whole viewport. Only the article area
-   dims now, so the header, drawer and footer keep their normal colours. */
-body.drawer-open #main-content { position: relative; }
-body.drawer-open #main-content::after {
-  content: ""; position: absolute; inset: 0; z-index: 40;
+/* Opening the drawer dims the whole viewport - top strip included, per user
+   feedback. The overlay is a ::after on the header (the stacking context the
+   drawer lives in): the drawer panel itself (.nav-panel, z-index 100) stays
+   above it, while the brand capsule and the page below dim together. */
+body.drawer-open .site-header::after {
+  content: ""; position: fixed; inset: 0; z-index: 1;
   background: rgba(10, 16, 24, 0.34); pointer-events: none;
+}
+/* Safety net: if the viewport grows past the drawer breakpoint while the drawer
+   is open (rotation, window resize), never dim the desktop page. */
+@media (min-width: 901px) {
+  body.drawer-open .site-header::after { content: none; }
 }
 
 /* The header's scrolled state replaced the drawer's off-canvas transform with
@@ -1368,6 +1531,18 @@ body.drawer-open #main-content::after {
   .site-header.is-scrolled .nav-panel.is-open { transform: none; }
   .nav-panel:not(.is-open) { pointer-events: none; }
   .nav-panel.is-open { pointer-events: auto; }
+}
+
+/* Phone drawer: menu rows used to be inline-flex and hugged their text, so the
+   caret sat right next to the label and the right half of the panel was dead
+   space ("宽度奇怪"). Stretch every row to the panel width and give the submenu
+   an indented accent rail so parent/child levels read clearly. */
+@media (max-width: 900px) {
+  .primary-nav > ul > li > a,
+  .primary-nav .submenu a { display: flex; width: 100%; box-sizing: border-box; }
+  .primary-nav .submenu { width: 100%; margin: 0 0 6px 16px; padding: 0 0 0 10px; border-left: 2px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+  .primary-nav .submenu a { padding: 8px 12px; font-size: 0.9rem; }
+  .primary-nav .submenu a::after { content: none; }
 }
 
 /* ---------- fullscreen hero: hide the brand, slide the nav to the centre ---------- */
@@ -1394,10 +1569,6 @@ body.drawer-open #main-content::after {
 .moment-item p { margin: 0; font-size: 0.88rem; line-height: 1.6; color: var(--text-secondary); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .moment-item p a { color: var(--accent); }
 .ranking-widget comment-ranking-sidebar { display: block; min-height: 60px; }
-.footer-plugin-links { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 10px; font-size: 0.84rem; }
-.footer-plugin-links:empty { display: none; }
-.footer-plugin-links a { color: var(--text-muted); }
-.footer-plugin-links a:hover { color: var(--accent); }
 
 /* ---------- plugin-moments pages: /moments and /moments/{name} ---------- */
 .moment-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; }
@@ -1420,4 +1591,32 @@ body.drawer-open #main-content::after {
 @media (max-width: 640px) {
   .moment-card { padding: 16px; }
   .moment-media-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* ---------- legacy engines: no color-mix() ----------
+   Chrome <111 and several in-app WebViews don't implement color-mix(); every
+   background written with it fails outright, leaving the capsule nav, the
+   drawer and quote blocks transparent ("部分浏览器不适配"). Paint solid
+   var()-based fallbacks here - modern engines keep the translucent values. */
+@supports not (color: color-mix(in srgb, red, blue)) {
+  .brand-pill, .nav-panel, .mobile-actions { background: var(--surface); }
+  .icon-btn:hover, .nav-icon:hover { background: var(--surface-muted); }
+  .primary-nav li.is-active > a { background: var(--surface-muted); }
+  .hero { background: var(--bg); }
+  .post-cover { background: var(--surface-muted); }
+  .post-cover.is-empty { background: var(--surface-muted); }
+  .summary-card { border-color: var(--border); background: var(--surface-muted); }
+  .article, .article[data-entry-style="robes"] { background: var(--surface); border-color: var(--border); }
+  .entry-content a { border-bottom-color: var(--accent); }
+  .entry-content blockquote { background: var(--surface-muted); }
+  .entry-content code { background: var(--surface-muted); }
+  .article[data-entry-style="robes"] .entry-content h3 { background: var(--surface-muted); }
+  .article[data-entry-style="robes"] .entry-content code,
+  .article[data-entry-style="robes"] .entry-content pre,
+  .article[data-entry-style="robes"] .entry-content blockquote,
+  .article[data-entry-style="robes"] .entry-content ol > li::before,
+  .article[data-entry-style="robes"] .entry-content th,
+  .article[data-entry-style="robes"] .entry-content tr:hover { background: var(--surface-muted); border-color: var(--border); }
+  .article[data-entry-style="robes"] .entry-content hr { background: var(--border); }
+  .back-top { background: var(--surface); }
 }

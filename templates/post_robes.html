@@ -1,0 +1,138 @@
+<!doctype html>
+<html xmlns:th="https://www.thymeleaf.org" th:replace="~{layout :: html(head = ~{::head}, content = ~{::content})}">
+  <!-- 自定义文章模板「模板二」：Robes 风格正文排版 -->
+  <!-- 文章页主体：post.html（默认模板）/ post_robes.html（模板二）共用，
+     构建期由 include 展开，style 属性决定正文排版（default / robes）。 -->
+<th:block th:fragment="head">
+  <title th:text="|${post.spec.title} - ${site.title}|">文章标题 - 熹屿 Xiyu</title>
+  <th:block th:if="${theme.config.seo.enable_metadata != false}">
+  <link rel="canonical" th:href="${site.url + post.status.permalink}" />
+  <meta property="og:type" th:content="article" />
+  <meta property="og:site_name" th:content="${site.title}" />
+  <meta property="og:title" th:content="${post.spec.title}" />
+  <meta property="og:url" th:content="${site.url + post.status.permalink}" />
+  <meta property="og:description" th:if="${post.status.excerpt}" th:content="${post.status.excerpt}" />
+  <meta property="og:image" th:if="${post.spec.cover ?: site.logo}" th:content="${post.spec.cover ?: site.logo}" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" th:content="${post.spec.title}" />
+  <meta name="twitter:description" th:if="${post.status.excerpt}" th:content="${post.status.excerpt}" />
+  <meta name="twitter:image" th:if="${post.spec.cover ?: site.logo}" th:content="${post.spec.cover ?: site.logo}" />
+</th:block>
+
+  <script type="application/ld+json" th:if="${theme.config.seo.enable_structured_data != false}" th:inline="javascript">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": /*[[${post.spec.title}]]*/ "",
+      "description": /*[[${post.status.excerpt}]]*/ "",
+      "image": /*[[${post.spec.cover ?: site.logo}]]*/ "",
+      "datePublished": /*[[${#temporals.format(post.spec.publishTime,'yyyy-MM-dd')}]]*/ "",
+      "dateModified": /*[[${#temporals.format(post.status.lastModifyTime ?: post.spec.publishTime,'yyyy-MM-dd')}]]*/ "",
+      "author": { "@type": "Person", "name": /*[[${post.owner?.displayName ?: site.title}]]*/ "" },
+      "publisher": { "@type": "Organization", "name": /*[[${site.title}]]*/ "" },
+      "mainEntityOfPage": /*[[${site.url + post.status.permalink}]]*/ ""
+    }
+  </script>
+</th:block>
+
+<th:block th:fragment="content" th:with="heroCover=${theme.config.style.cover_style != 'inline' and not #strings.isEmpty(post.spec.cover)}">
+  <!-- 顶部横幅：有封面时铺满页面顶部，标题 / 分类 / 摘要 / 作者与元信息叠加其上，
+       正文卡片上浮压住横幅底边（参考 xhhao 的文章页 banner）。 -->
+  <section class="article-hero" th:if="${heroCover}">
+    <div class="article-hero-bg" th:style="|background-image:url('${post.spec.cover}')|" aria-hidden="true"></div>
+    <div class="article-hero-inner">
+      <div class="article-hero-body">
+        <div class="article-hero-cats" th:if="${not #lists.isEmpty(post.categories)}">
+          <a th:each="cat : ${post.categories}" th:href="@{${cat.status.permalink}}" th:text="${cat.spec.displayName}">分类</a>
+        </div>
+        <h1 class="article-hero-title" th:text="${post.spec.title}">文章标题</h1>
+        <p class="article-hero-excerpt" th:if="${not #strings.isEmpty(post.status.excerpt)}" th:text="${post.status.excerpt}">文章摘要</p>
+      </div>
+      <div class="article-hero-foot">
+        <div class="article-hero-byline" th:if="${post.owner != null}">
+          <img th:if="${not #strings.isEmpty(post.owner.avatar)}" th:src="${post.owner.avatar}" alt="" loading="lazy" />
+          <span class="article-hero-avatar" th:if="${#strings.isEmpty(post.owner.avatar)}" th:text="${#strings.substring(post.owner.displayName, 0, 1)}">熹</span>
+          <div class="article-hero-author">
+            <a th:href="@{${post.owner.permalink}}" th:text="${post.owner.displayName}">作者</a>
+            <time th:datetime="${post.spec.publishTime}" th:text="${#temporals.format(post.spec.publishTime, 'yyyy-MM-dd')}">2026-01-01</time>
+          </div>
+        </div>
+        <ul class="article-hero-meta">
+          <li><svg class="icon" aria-hidden="true"><use href="#i-eye"></use></svg><span th:text="${post.stats.visit}">0</span> 次阅读</li>
+          <li><svg class="icon" aria-hidden="true"><use href="#i-message"></use></svg><span th:text="${post.stats.comment}">0</span> 条评论</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="shell" th:classappend="${heroCover} ? 'shell-over-hero' : ''">
+    <div class="page-head" th:unless="${heroCover}">
+      <nav class="breadcrumb" aria-label="面包屑">
+        <a th:href="@{/}">首页</a><span>/</span>
+        <th:block th:if="${not #lists.isEmpty(post.categories)}">
+          <a th:href="@{${post.categories[0].status.permalink}}" th:text="${post.categories[0].spec.displayName}">分类</a><span>/</span>
+        </th:block>
+        <span>正文</span>
+      </nav>
+    </div>
+
+    <div class="content-grid no-sidebar">
+      <div>
+        <div class="article-layout" th:classappend="${theme.config.features.show_toc == false} ? 'no-toc' : ''">
+          <article class="article" data-article-enter data-entry-style="robes">
+            <header class="article-head" th:unless="${heroCover}">
+              <h1 th:text="${post.spec.title}">文章标题</h1>
+              <div class="article-meta">
+                <span><svg class="icon" aria-hidden="true"><use href="#i-calendar"></use></svg><time th:datetime="${post.spec.publishTime}" th:text="${#temporals.format(post.spec.publishTime, 'yyyy-MM-dd')}">2026-01-01</time></span>
+                <span th:if="${not #lists.isEmpty(post.categories)}"><svg class="icon" aria-hidden="true"><use href="#i-folder"></use></svg><a th:each="cat : ${post.categories}" th:href="@{${cat.status.permalink}}" th:text="${cat.spec.displayName}">分类</a></span>
+                <span><svg class="icon" aria-hidden="true"><use href="#i-eye"></use></svg><span th:text="${post.stats.visit}">0</span> 次阅读</span>
+                <span><svg class="icon" aria-hidden="true"><use href="#i-message"></use></svg><span th:text="${post.stats.comment}">0</span> 条评论</span>
+                <span th:if="${post.owner != null}"><svg class="icon" aria-hidden="true"><use href="#i-user"></use></svg><a th:href="@{${post.owner.permalink}}" th:text="${post.owner.displayName}">作者</a></span>
+              </div>
+            </header>
+
+            <figure class="article-cover" th:if="${not heroCover and not #strings.isEmpty(post.spec.cover)}">
+              <img th:src="${post.spec.cover}" th:alt="${post.spec.title}" loading="lazy" />
+            </figure>
+
+            <div class="summary-card" th:if="${theme.config.features.show_summary_card != false and not #strings.isEmpty(post.status.excerpt)}"
+                 th:attr="data-typing=${theme.config.features.summary_typing != false ? 'on' : 'off'},
+                          data-typing-speed=${theme.config.features.summary_typing_speed ?: '16'}">
+              <div class="summary-head"><span><svg class="icon" aria-hidden="true"><use href="#i-sparkles"></use></svg>文章摘要</span></div>
+              <p class="summary-text" th:text="${post.status.excerpt}">这篇文章的摘要内容。</p>
+            </div>
+
+            <div class="entry-content" th:utext="${post.content.content}">
+              <p>正文内容</p>
+            </div>
+
+            <footer class="article-footer">
+              <div class="article-tags" th:if="${not #lists.isEmpty(post.tags)}">
+                <a class="chip" th:each="tag : ${post.tags}" th:href="@{${tag.status.permalink}}" th:text="|# ${tag.spec.displayName}|"># 标签</a>
+              </div>
+              <div class="post-meta"><span>最后更新于 <time th:text="${#temporals.format(post.status.lastModifyTime ?: post.spec.publishTime, 'yyyy-MM-dd')}">2026-01-01</time></span></div>
+            </footer>
+          </article>
+
+          <aside class="toc" th:if="${theme.config.features.show_toc != false}" aria-label="文章目录">
+            <div class="toc-title"><svg class="icon" aria-hidden="true"><use href="#i-list-alt"></use></svg>本页目录</div>
+            <nav><ul data-toc-list><li class="toc-indicator" aria-hidden="true"></li></ul></nav>
+          </aside>
+        </div>
+
+        <nav class="post-nav" th:with="cursor = ${postFinder.cursor(post.metadata.name)}" aria-label="上下篇文章">
+          <a th:if="${cursor.hasPrevious()}" th:href="@{${cursor.previous.status.permalink}}"><small>← 上一篇</small><strong th:text="${cursor.previous.spec.title}">上一篇</strong></a>
+          <span th:unless="${cursor.hasPrevious()}"></span>
+          <a class="next" th:if="${cursor.hasNext()}" th:href="@{${cursor.next.status.permalink}}"><small>下一篇 →</small><strong th:text="${cursor.next.spec.title}">下一篇</strong></a>
+          <span th:unless="${cursor.hasNext()}"></span>
+        </nav>
+
+        <section class="comments" id="post-comment" th:if="${haloCommentEnabled}">
+          <halo:comment group="content.halo.run" kind="Post" th:attr="name=${post.metadata.name}" />
+        </section>
+      </div>
+    </div>
+  </div>
+</th:block>
+
+</html>

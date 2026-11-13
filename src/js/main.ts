@@ -202,7 +202,13 @@ function placeToc(): void {
   tocRefresh?.();
 }
 
-drawerMq.addEventListener("change", placeToc);
+drawerMq.addEventListener("change", () => {
+  placeToc();
+  /* Leaving the drawer breakpoint (rotation, desktop-mode viewport switch)
+     must also clear the dim overlay and scroll lock - a stale drawer-open on
+     the desktop layout would grey the whole page. */
+  setDrawer(false);
+});
 
 function openSearch(): void {
   const widget = (window as unknown as { SearchWidget?: { open?: () => void } }).SearchWidget;
@@ -318,17 +324,16 @@ markActiveMenu();
 initSubmenuAccessibility();
 setDrawer(false);
 
-/* In "back to list" mode the home page button points down and reads "返回文章
-   列表"; every other page falls back to the plain "回到顶部" affordance. */
+/* In "back to list" mode the home page button still scrolls to the post list,
+   but the icon always points up (per design, every floating arrow on the home
+   page points up); other pages keep the plain "回到顶部" affordance. */
 function markBackTopMode(): void {
   const button = $("[data-back-top]");
   if (!button || button.dataset.backtopMode !== "list") return;
   const onHome = !!$("#post-list");
-  const use = button.querySelector("use");
   button.classList.toggle("is-back-list", onHome);
   button.setAttribute("title", onHome ? "返回文章列表" : "回到顶部");
   button.setAttribute("aria-label", onHome ? "返回文章列表" : "回到顶部");
-  if (use) use.setAttribute("href", onHome ? "#i-arrow-down" : "#i-arrow-up");
 }
 
 markBackTopMode();
@@ -818,24 +823,83 @@ function initLinks(): void {
     })
   );
 
-  // "随机访问" is back to the original behaviour: one click, one random link,
-  // reusing the exact same jump semantics as a normal link card.
+  // "随机访问": pick one friend link and open it with the same jump semantics
+  // as clicking a card. With the roulette animation on, the highlight hops
+  // across the cards with a slowing rhythm, lands on the winner, then opens.
   $$("[data-random-link]").forEach((btn) =>
     btn.addEventListener("click", () => {
-      const links = $$<HTMLAnchorElement>(".link-card[href]");
-      if (!links.length) {
+      if (btn.classList.contains("is-rolling")) return;
+      const all = $$<HTMLAnchorElement>(".link-card[href]");
+      if (!all.length) {
         toast("暂无可访问的友链");
         return;
       }
-      const target = links[Math.floor(Math.random() * links.length)];
-      const anchor = document.createElement("a");
-      anchor.href = target.href;
-      anchor.target = target.getAttribute("target") || "_blank";
-      anchor.rel = target.getAttribute("rel") || "noopener noreferrer";
-      anchor.style.display = "none";
-      body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
+      // Ride only on cards the visitor can actually see, so a group filter or
+      // a collapsed panel never produces an invisible highlight.
+      const shown = all.filter((card) => card.offsetParent !== null);
+      const pool = shown.length ? shown : all;
+      const target = pool[Math.floor(Math.random() * pool.length)];
+      const open = () => {
+        const anchor = document.createElement("a");
+        anchor.href = target.href;
+        anchor.target = target.getAttribute("target") || "_blank";
+        anchor.rel = target.getAttribute("rel") || "noopener noreferrer";
+        anchor.style.display = "none";
+        body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+      };
+      const animate =
+        btn.getAttribute("data-random-anim") !== "false" && !reducedMotion && pool.length > 1;
+      if (!animate) {
+        open();
+        return;
+      }
+
+      const label = btn.querySelector<HTMLElement>("[data-random-label]");
+      const baseLabel = label?.textContent || "随机访问";
+      let hit: HTMLElement | null = null;
+      const mark = (card: HTMLElement | null) => {
+        if (hit === card) return;
+        hit?.classList.remove("is-roll-hit");
+        hit = card;
+        hit?.classList.add("is-roll-hit");
+      };
+      const steps = 12;
+      let step = 0;
+      btn.classList.add("is-rolling");
+      btn.setAttribute("aria-busy", "true");
+      if (label) label.textContent = "抽签中…";
+
+      const finish = () => {
+        mark(null);
+        btn.classList.remove("is-rolling");
+        btn.removeAttribute("aria-busy");
+        if (label) label.textContent = baseLabel;
+        target.classList.add("is-picked");
+        const rect = target.getBoundingClientRect();
+        if (rect.top < 0 || rect.bottom > window.innerHeight) {
+          target.scrollIntoView({ block: "center", behavior: "smooth" });
+        }
+        window.setTimeout(() => {
+          target.classList.remove("is-picked");
+          open();
+        }, 320);
+      };
+
+      const spin = () => {
+        if (step >= steps) {
+          finish();
+          return;
+        }
+        let next = pool[Math.floor(Math.random() * pool.length)];
+        if (next === hit) next = pool[(pool.indexOf(next) + 1) % pool.length];
+        mark(next);
+        const p = step / steps;
+        step += 1;
+        window.setTimeout(spin, 34 + 90 * Math.pow(p, 2.2));
+      };
+      spin();
     })
   );
 
@@ -1177,10 +1241,26 @@ function initFriendsFeed(): void {
 }
 
 /* ------------------------------------------------------------------ *
- * Link application: Halo official Links plugin REST API + CAPTCHA.
- * POST /link-applications/captcha  -> { challengeId, image }
- * POST /link-applications           -> 201 { id, status }
+ * Link application: 官方 PluginLinks REST 或第三方 LinksSubmit 全局 API。
+ * official    : POST /link-applications/captcha -> { challengeId, image }
+ *               POST /link-applications         -> 201 { id, status }
+ * linkssubmit : window.LinksSubmit.submit / getCaptchaUrl / sendVerifyCode
+ *               （https://auth.muyin.site/docs/LinksSubmit/getting-started/api-doc）
+ *               overlay 模式直接调用 window.openLinksSubmitOverlay()
  * ------------------------------------------------------------------ */
+interface LsResponse { code?: number; msg?: string; status?: number }
+interface LsGroup { groupName?: string; groupId?: string }
+interface LsApi {
+  submit(data: Record<string, unknown>, verifyCode: string, verifyCodeType?: "email" | "captcha"): Promise<LsResponse>;
+  getLinkGroups?: () => Promise<LsGroup[]>;
+  sendVerifyCode?: (email: string) => Promise<LsResponse>;
+  getCaptchaUrl?: () => string;
+  refreshCaptcha?: (element: HTMLElement | string) => void;
+}
+type LsWindow = typeof window & {
+  LinksSubmit?: LsApi;
+  openLinksSubmitOverlay?: () => void;
+};
 function initLinkApplication(): void {
   const dialog = $<HTMLDialogElement>("[data-apply-dialog]");
   const form = $<HTMLFormElement>("[data-apply-form]");
@@ -1190,7 +1270,29 @@ function initLinkApplication(): void {
   const captchaImg = $<HTMLImageElement>("[data-apply-captcha]");
   const message = $<HTMLElement>("[data-apply-message]");
   const submit = $<HTMLButtonElement>("[data-apply-submit]");
+  const codeInput = $<HTMLInputElement>("[data-apply-verify] input");
+  const captchaRefresh = $<HTMLButtonElement>("[data-apply-captcha-refresh]");
+  const sendCodeBtn = $<HTMLButtonElement>("[data-apply-send-code]");
+  const groupRow = $<HTMLElement>("[data-apply-group-row]");
+  const groupSelect = $<HTMLSelectElement>("[data-apply-group]");
+  const provider = trigger.getAttribute("data-apply-provider") || "official";
+  const lsMode = trigger.getAttribute("data-linkssubmit-mode") || "theme";
+  const verifyType = (trigger.getAttribute("data-linkssubmit-verify") || "captcha") as "email" | "captcha";
+  const isLs = provider === "linkssubmit";
+  const overlayMode = isLs && lsMode === "overlay";
+  const lsApi = () => (window as unknown as LsWindow).LinksSubmit;
+  const lsOverlay = () => (window as unknown as LsWindow).openLinksSubmitOverlay;
+  /** The plugin injects linkssubmit.js after boot, so retry briefly. */
+  const waitForLs = async (): Promise<LsApi | undefined> => {
+    for (let i = 0; i < 12; i += 1) {
+      const api = lsApi();
+      if (api) return api;
+      await new Promise((resolve) => window.setTimeout(resolve, 150));
+    }
+    return undefined;
+  };
   let challengeId = "";
+  let codeTimer = 0;
 
   const say = (text: string, error = false) => {
     if (!message) return;
@@ -1201,6 +1303,28 @@ function initLinkApplication(): void {
   const clearSay = () => message?.setAttribute("hidden", "");
 
   async function refreshCaptcha(clearMessage = true) {
+    if (isLs) {
+      if (verifyType === "email") {
+        if (codeInput) codeInput.value = "";
+        if (clearMessage) clearSay();
+        return;
+      }
+      const api = await waitForLs();
+      if (!api) {
+        say("未检测到 LinksSubmit 插件，请先安装并启用。", true);
+        return;
+      }
+      const url = typeof api.getCaptchaUrl === "function"
+        ? api.getCaptchaUrl()
+        : `/apis/linkssubmit.muyin.site/v1alpha1/captcha?t=${Date.now()}`;
+      if (captchaImg) {
+        captchaImg.src = url;
+        captchaImg.hidden = false;
+      }
+      if (codeInput) codeInput.value = "";
+      if (clearMessage) clearSay();
+      return;
+    }
     try {
       const res = await fetch(`${API}/link-applications/captcha`, {
         method: "POST",
@@ -1224,6 +1348,105 @@ function initLinkApplication(): void {
     }
   }
 
+  /** Adapt the shared form to the selected provider without duplicating markup. */
+  function configureForm(): void {
+    if (!isLs) return;
+    const email = $<HTMLInputElement>("[data-apply-form] input[name=email]");
+    if (email) {
+      email.required = true;
+      email.placeholder = "接收审核通知与验证码";
+      const label = email.closest("label")?.querySelector("span");
+      if (label) label.textContent = "联系邮箱 *";
+    }
+    const backlinkLabel = $<HTMLElement>("[data-apply-backlink-label]");
+    if (backlinkLabel) backlinkLabel.textContent = "友链页面地址";
+    const rssLabel = $<HTMLElement>("[data-apply-rss-label]");
+    if (rssLabel) rssLabel.textContent = "RSS 地址";
+    const rss = $<HTMLTextAreaElement>("[data-apply-form] textarea[name=feedUrls]");
+    if (rss) rss.rows = 1;
+    if (codeInput) {
+      codeInput.maxLength = verifyType === "email" ? 6 : 5;
+      codeInput.placeholder = verifyType === "email" ? "输入邮箱验证码" : "输入图中验证码";
+    }
+    if (captchaImg) captchaImg.hidden = verifyType === "email";
+    if (captchaRefresh) captchaRefresh.hidden = verifyType === "email";
+    if (sendCodeBtn) sendCodeBtn.hidden = verifyType !== "email";
+  }
+
+  async function loadGroups(): Promise<void> {
+    if (!isLs || !groupRow || !groupSelect) return;
+    const api = await waitForLs();
+    if (!api || typeof api.getLinkGroups !== "function") {
+      groupRow.hidden = true;
+      return;
+    }
+    try {
+      const groups = await api.getLinkGroups();
+      const list = Array.isArray(groups) ? groups : [];
+      groupSelect.replaceChildren();
+      const empty = document.createElement("option");
+      empty.value = "";
+      empty.textContent = "默认分组";
+      groupSelect.append(empty);
+      list.forEach((group) => {
+        const id = String(group.groupId || "");
+        if (!id) return;
+        const option = document.createElement("option");
+        option.value = id;
+        option.textContent = String(group.groupName || id);
+        groupSelect.append(option);
+      });
+      groupRow.hidden = list.length === 0;
+    } catch (_) {
+      groupRow.hidden = true;
+    }
+  }
+
+  async function sendCode(): Promise<void> {
+    const api = await waitForLs();
+    if (!api || typeof api.sendVerifyCode !== "function" || !sendCodeBtn) {
+      say("未检测到 LinksSubmit 插件，请先安装并启用。", true);
+      return;
+    }
+    const email = $<HTMLInputElement>("[data-apply-form] input[name=email]")?.value.trim() || "";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      say("请先填写有效的联系邮箱。", true);
+      return;
+    }
+    let started = false;
+    sendCodeBtn.disabled = true;
+    try {
+      const res = await api.sendVerifyCode(email);
+      if (res.code === 200 || res.code === undefined) {
+        started = true;
+        say("验证码已发送到邮箱，请在下方输入。");
+        let left = 60;
+        sendCodeBtn.textContent = `${left}s 后重发`;
+        window.clearInterval(codeTimer);
+        codeTimer = window.setInterval(() => {
+          left -= 1;
+          if (left <= 0) {
+            window.clearInterval(codeTimer);
+            codeTimer = 0;
+            sendCodeBtn.disabled = false;
+            sendCodeBtn.textContent = "发送验证码";
+          } else {
+            sendCodeBtn.textContent = `${left}s 后重发`;
+          }
+        }, 1000);
+      } else {
+        say(res.msg || "验证码发送失败，请稍后重试。", true);
+      }
+    } catch (err) {
+      const msg = err && typeof err === "object" && "msg" in err
+        ? String((err as { msg?: string }).msg || "") : "";
+      say(msg || "验证码发送失败，请稍后重试。", true);
+    } finally {
+      if (!started) sendCodeBtn.disabled = false;
+    }
+  }
+  configureForm();
+
   let closing = false;
   const openDialog = () => {
     if (dialog.open) return;
@@ -1232,6 +1455,7 @@ function initLinkApplication(): void {
     if (typeof dialog.showModal === "function") dialog.showModal();
     else dialog.setAttribute("open", "");
     void refreshCaptcha();
+    if (isLs) void loadGroups();
   };
   const closeDialog = () => {
     if (!dialog.open || closing) return;
@@ -1258,18 +1482,47 @@ function initLinkApplication(): void {
   };
 
   trigger.addEventListener("click", () => {
-    if (trigger.getAttribute("data-apply-enabled") === "true") {
+    const fallback = () => {
+      const url = trigger.getAttribute("data-apply-url");
+      if (url) {
+        window.location.href = url;
+        return;
+      }
+      toast(isLs
+        ? "未检测到 LinksSubmit 插件，请先安装并启用，或填写申请备用地址"
+        : "请先在链接插件设置中开启「启用友链申请」");
+    };
+    if (overlayMode) {
+      const open = lsOverlay();
+      if (typeof open === "function") {
+        open();
+        return;
+      }
+      void (async () => {
+        for (let i = 0; i < 12; i += 1) {
+          await new Promise((resolve) => window.setTimeout(resolve, 150));
+          const fn = lsOverlay();
+          if (typeof fn === "function") {
+            fn();
+            return;
+          }
+        }
+        fallback();
+      })();
+      return;
+    }
+    if (!isLs && trigger.getAttribute("data-apply-enabled") === "true") {
       openDialog();
       return;
     }
-    const legacy = (window as unknown as { LinksSubmit?: { openLinksSubmitOverlay?: () => void } }).LinksSubmit;
-    if (legacy?.openLinksSubmitOverlay) {
-      legacy.openLinksSubmitOverlay();
+    if (isLs) {
+      void waitForLs().then((api) => {
+        if (api) openDialog();
+        else fallback();
+      });
       return;
     }
-    const url = trigger.getAttribute("data-apply-url");
-    if (url) window.location.href = url;
-    else toast("请先在链接插件设置中开启「启用友链申请」");
+    fallback();
   });
   $("[data-apply-close]")?.addEventListener("click", closeDialog);
   dialog.addEventListener("click", (e) => {
@@ -1291,52 +1544,80 @@ function initLinkApplication(): void {
     dialog.classList.remove("is-closing");
   });
   $("[data-apply-captcha-refresh]")?.addEventListener("click", () => void refreshCaptcha());
+  sendCodeBtn?.addEventListener("click", () => void sendCode());
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    if (!challengeId) {
-      say("验证码尚未就绪，请刷新后重试。", true);
-      return;
-    }
     const fd = new FormData(form);
     const str = (key: string) => String(fd.get(key) || "").trim();
     const optional = (key: string) => str(key) || undefined;
-    const body = {
-      url: str("url"),
-      displayName: str("displayName"),
-      logo: optional("logo"),
-      description: optional("description"),
-      email: optional("email"),
-      backlink: optional("backlink"),
-      feedUrls: str("feedUrls").split(/\r?\n/).map((s) => s.trim()).filter(Boolean),
-      challengeId,
-      captchaCode: str("captchaCode"),
-    };
+    const ls = isLs ? await waitForLs() : undefined;
+    if (isLs && (!ls || typeof ls.submit !== "function")) {
+      say("未检测到 LinksSubmit 插件，请先安装并启用。", true);
+      return;
+    }
+    if (!isLs && !challengeId) {
+      say("验证码尚未就绪，请刷新后重试。", true);
+      return;
+    }
     if (submit) submit.disabled = true;
     try {
-      const res = await fetch(`${API}/link-applications`, {
-        method: "POST",
-        credentials: "omit",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      if (res.status === 201) {
-        say("申请已提交，等待站主审核，谢谢！");
-        form.reset();
+      if (isLs && ls) {
+        const rss = str("feedUrls").split(/\r?\n/).map((s) => s.trim()).filter(Boolean)[0];
+        const data: Record<string, unknown> = {
+          displayName: str("displayName"),
+          url: str("url"),
+          email: str("email"),
+          logo: optional("logo"),
+          description: optional("description"),
+          linkPageUrl: optional("backlink"),
+          rssUrl: rss,
+          groupName: optional("groupName"),
+        };
+        const res = await ls.submit(data, str("captchaCode"), verifyType);
+        if (res.code === 200 || res.code === undefined) {
+          say(res.msg || "申请已提交，等待站主审核，谢谢！");
+          form.reset();
+        } else {
+          say(res.msg || "提交失败，请检查填写内容后重试。", true);
+        }
       } else {
-        let detail = "提交失败，请检查填写内容后重试";
-        try {
-          const problem = await res.json();
-          detail = problem.detail || detail;
-        } catch (_) { /* keep default */ }
-        say(detail, true);
+        const body = {
+          url: str("url"),
+          displayName: str("displayName"),
+          logo: optional("logo"),
+          description: optional("description"),
+          email: optional("email"),
+          backlink: optional("backlink"),
+          feedUrls: str("feedUrls").split(/\r?\n/).map((s) => s.trim()).filter(Boolean),
+          challengeId,
+          captchaCode: str("captchaCode"),
+        };
+        const res = await fetch(`${API}/link-applications`, {
+          method: "POST",
+          credentials: "omit",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (res.status === 201) {
+          say("申请已提交，等待站主审核，谢谢！");
+          form.reset();
+        } else {
+          let detail = "提交失败，请检查填写内容后重试";
+          try {
+            const problem = await res.json();
+            detail = problem.detail || detail;
+          } catch (_) { /* keep default */ }
+          say(detail, true);
+        }
       }
-    } catch (_) {
-      say("网络异常，请稍后重试。", true);
+    } catch (err) {
+      const msg = err && typeof err === "object" && "msg" in err
+        ? String((err as { msg?: string }).msg || "") : "";
+      say(msg || "网络异常，请稍后重试。", true);
     } finally {
       if (submit) submit.disabled = false;
-      // The challenge is single-use: always fetch a fresh one, but keep the
-      // success/error message from the submission on screen.
+      // 图形验证码 / 官方挑战都是一次性的，提交后换一张；保留结果提示。
       await refreshCaptcha(false);
     }
   });

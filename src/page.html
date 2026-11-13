@@ -17,7 +17,7 @@
       <div class="content-grid no-sidebar">
         <div>
           <div class="article-layout" th:classappend="${theme.config.features.show_toc == false} ? 'no-toc' : ''">
-            <article class="article">
+            <article class="article" data-entry-style="default">
               <header class="article-head">
                 <h1 th:text="${singlePage.spec.title}">页面标题</h1>
                 <div class="article-meta">

@@ -14,9 +14,16 @@ spec:
   issues: "https://github.com/YBRC114514/halo-theme-xiyu/issues"
   settingName: "theme-xiyu-setting"
   configMapName: "theme-xiyu-configmap"
-  version: 1.0.16
+  version: 1.0.17
   requires: ">=2.26.0"
   customTemplates:
+    post:
+      # Halo 自带的「默认模板」（空值）即 post.html，已是毛玻璃默认排版，
+      # 故不再声明同名模板，避免下拉里出现两个「默认模板」。
+      - name: 模板二
+        description: Robes 风格正文排版，下划线式标题、引号引用块与 Mac 风格代码块（借鉴 robes.xin）
+        screenshot: ""
+        file: post_robes.html
     page:
       - name: 朋友圈
         description: 基于 Halo 官方链接插件 RSS 订阅动态（linkfeeds）的朋友圈聚合页面

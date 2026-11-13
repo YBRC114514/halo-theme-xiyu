@@ -32,10 +32,17 @@
           <h2 th:text="${theme.config.links.intro_title ?: '一起把小岛连成群岛'}">一起把小岛连成群岛</h2>
           <p th:text="${theme.config.links.intro_desc ?: '如果你的站点也在认真记录点什么，欢迎按下方规则申请互换链接。'}">友链介绍文案</p>
           <div class="intro-actions">
-            <button class="btn btn-gradient" type="button" data-link-apply th:attr="data-apply-url=${theme.config.links.apply_url}, data-apply-enabled=${linkApplicationEnabled ?: false}">
+            <button class="btn btn-gradient" type="button" data-link-apply
+                    th:attr="data-apply-url=${theme.config.links.apply_url},
+                             data-apply-enabled=${linkApplicationEnabled ?: false},
+                             data-apply-provider=${theme.config.links.apply_provider ?: 'official'},
+                             data-linkssubmit-mode=${theme.config.links.linkssubmit_mode ?: 'theme'},
+                             data-linkssubmit-verify=${theme.config.links.linkssubmit_verify ?: 'captcha'}">
               <svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg>申请友链
             </button>
-            <button class="btn btn-gradient warm" type="button" data-random-link th:if="${theme.config.links.show_random != false}">
+            <button class="btn btn-gradient warm" type="button" data-random-link
+                    th:if="${theme.config.links.show_random != false}"
+                    th:attr="data-random-anim=${theme.config.links.random_anim != false}">
               <svg class="icon" aria-hidden="true"><use href="#i-shuffle"></use></svg><span data-random-label>随机访问</span>
             </button>
           </div>
@@ -67,7 +74,8 @@
         </section>
       </div>
 
-      <!-- Friends-link application: Halo official Links plugin REST API -->
+      <!-- 友链申请：官方 PluginLinks REST 或第三方 LinksSubmit 全局 API，
+           由「友链页 → 友链申请方式」设置切换 -->
       <dialog class="apply-dialog" data-apply-dialog aria-labelledby="apply-title">
         <form data-apply-form>
           <div class="apply-head">
@@ -80,14 +88,18 @@
             <label><span>站点地址 *</span><input name="url" type="url" required placeholder="https://example.com" /></label>
             <label><span>Logo 地址</span><input name="logo" type="url" placeholder="https://example.com/logo.png" /></label>
             <label><span>联系邮箱</span><input name="email" type="email" placeholder="hello@example.com" /></label>
-            <label><span>反链地址</span><input name="backlink" type="url" placeholder="https://example.com/links" /></label>
+            <label><span data-apply-backlink-label>反链地址</span><input name="backlink" type="url" placeholder="https://example.com/links" /></label>
             <label><span>站点简介</span><textarea name="description" rows="2" maxlength="300"></textarea></label>
-            <label><span>RSS 地址（每行一个）</span><textarea name="feedUrls" rows="2" placeholder="https://example.com/rss.xml"></textarea></label>
+            <label><span data-apply-rss-label>RSS 地址（每行一个）</span><textarea name="feedUrls" rows="2" placeholder="https://example.com/rss.xml"></textarea></label>
           </div>
-          <div class="apply-captcha">
+          <div class="apply-group-row" data-apply-group-row hidden>
+            <label><span>友链分组</span><select name="groupName" data-apply-group><option value="">默认分组</option></select></label>
+          </div>
+          <div class="apply-captcha" data-apply-verify>
             <img class="apply-captcha-img" data-apply-captcha alt="验证码" hidden />
             <button class="apply-captcha-refresh" type="button" data-apply-captcha-refresh aria-label="换一张验证码"><svg class="icon" aria-hidden="true"><use href="#i-shuffle"></use></svg></button>
-            <input name="captchaCode" type="text" required maxlength="5" autocomplete="off" placeholder="输入图中验证码" />
+            <button class="apply-code-send" type="button" data-apply-send-code hidden>发送验证码</button>
+            <input name="captchaCode" type="text" required maxlength="6" autocomplete="off" placeholder="输入图中验证码" />
           </div>
           <p class="apply-message" data-apply-message hidden></p>
           <div class="apply-actions">
