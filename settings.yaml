@@ -101,18 +101,18 @@ spec:
         - $formkit: attachment
           name: brand_logo
           label: 左上角标识图片
-          help: 点「选择」可直接上传 PNG / JPG / SVG。上传 SVG 若提示「不支持该类型」，请先到 Halo 后台「附件 → 存储策略」编辑当前策略，把 SVG 加入允许的文件类型
+          help: Halo 支持 SVG 附件，点「选择」可直接上传 PNG / JPG / SVG。若提示「不支持该类型」，说明当前存储策略没允许 SVG：到「附件 → 存储策略」把 SVG 勾进允许类型，再回来上传即可
           width: 6rem
           value: ""
         - $formkit: text
           name: brand_logo_url
           label: 左上角标识图片地址（支持 SVG）
-          help: 填完整的图片网址，例如 https://example.com/logo.svg；优先于上面的图片附件，留空则依次回退到附件与站点 Logo
+          help: 填完整的图片网址，例如 https://example.com/logo.svg；外链或不想占附件额度时用这个。优先于上面的图片附件，留空则依次回退到附件与站点 Logo
           value: ""
         - $formkit: textarea
           name: brand_logo_svg
           label: 左上角标识 SVG 代码
-          help: 直接把 SVG 源码粘进来，不用上传，优先级最高（填写后忽略上面的图片与地址）。可用 currentColor 跟随主题色；含 <script> 或 on* 事件的代码会被忽略
+          help: 可选：直接把 SVG 源码粘进来，不占附件额度，还能用 currentColor 跟随明暗主题换色，优先级最高（填写后忽略上面的图片与地址）。含 <script> 或 on* 事件的代码会被忽略
           value: ""
           rows: 5
         - $formkit: switch
