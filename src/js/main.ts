@@ -6,6 +6,7 @@ const root = document.documentElement;
 const body = document.body;
 const SCHEME_KEY = "xiyu-scheme";
 const VIEW_KEY = "xiyu-view";
+const MOMENT_COLS_KEY = "xiyu-moments-cols";
 /* 1.0.14 renamed the theme from theme-azure-isle to theme-xiyu. Lift the old
    scheme/view preferences once so returning visitors do not lose their choice;
    the legacy keys are removed afterwards to avoid two sources of truth. */
@@ -1963,6 +1964,89 @@ function initHitokoto(): void {
 /* ------------------------------------------------------------------ *
  * Moments: local-time labels + click-to-zoom lightbox
  * ------------------------------------------------------------------ */
+
+// 瞬间页分栏：电脑端 1 / 2 / 3 栏由访客自选并记在本机；手机端 CSS 恒为单栏。
+// 多栏只保证宽度等分，卡片高度各随内容——脚本把真实高度折算成跨行数，
+// 于是纵向间距仍是 16px，只是各自的长短不再牵动同一行的邻居。
+function initMomentColumns(): void {
+  const page = $<HTMLElement>(".moments-page");
+  const feed = page ? page.querySelector<HTMLElement>(".moment-feed") : null;
+  if (!page || !feed) return;
+  const cards = Array.from(feed.children).filter(
+    (el): el is HTMLElement => el instanceof HTMLElement && el.classList.contains("moment-card")
+  );
+  if (!cards.length) return;
+  const buttons = $$<HTMLButtonElement>(".moment-cols-switch [data-moment-cols]");
+  const desktop = window.matchMedia("(min-width: 901px)");
+  const GAP = 16; // 卡片之间的竖向间距，与 CSS 的 16px 一致
+  let cols = page.getAttribute("data-moment-cols") === "2" || page.getAttribute("data-moment-cols") === "3"
+    ? (page.getAttribute("data-moment-cols") as string)
+    : "1";
+
+  const layout = (): void => {
+    const n = Number(cols);
+    // 单栏（或手机）时退回普通文档流：不写跨行，交给 gap 管间距。
+    feed.classList.remove("is-masonry");
+    cards.forEach((card) => card.style.removeProperty("grid-row-end"));
+    if (!desktop.matches || n < 2) return;
+    // 栏宽变了高度就变了，量之前先让浏览器按新宽度排一次。
+    void feed.offsetHeight;
+    const heights = cards.map((card) => card.getBoundingClientRect().height);
+    cards.forEach((card, i) => {
+      card.style.gridRowEnd = `span ${Math.max(1, Math.ceil(heights[i]) + GAP)}`;
+    });
+    // 跨行写完再挂 is-masonry：否则 1px 行会先把所有卡片压成一帧瘦条。
+    feed.classList.add("is-masonry");
+  };
+
+  const apply = (next: string, persist: boolean): void => {
+    cols = next === "2" || next === "3" ? next : "1";
+    page.setAttribute("data-moment-cols", cols);
+    buttons.forEach((btn) => {
+      btn.setAttribute("aria-pressed", btn.getAttribute("data-moment-cols") === cols ? "true" : "false");
+    });
+    layout();
+    if (!persist) return;
+    try {
+      localStorage.setItem(MOMENT_COLS_KEY, cols);
+    } catch (_) {
+      /* 隐私模式下写不进去，本次仍然生效 */
+    }
+  };
+
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => apply(btn.getAttribute("data-moment-cols") || "1", true));
+  });
+
+  // 懒加载图片落位后卡片会长高，重新折算一次跨行，避免叠在下一张卡上。
+  let queued = 0;
+  const schedule = (): void => {
+    if (queued) return;
+    queued = window.requestAnimationFrame(() => {
+      queued = 0;
+      layout();
+    });
+  };
+  if (typeof ResizeObserver !== "undefined") {
+    const ro = new ResizeObserver(schedule);
+    cards.forEach((card) => ro.observe(card));
+  } else {
+    feed.querySelectorAll("img").forEach((img) => img.addEventListener("load", schedule, { once: true }));
+  }
+  if (typeof desktop.addEventListener === "function") desktop.addEventListener("change", schedule);
+  else desktop.addListener(schedule);
+
+  let saved = "";
+  try {
+    saved = localStorage.getItem(MOMENT_COLS_KEY) || "";
+  } catch (_) {
+    /* ignore */
+  }
+  // 没有访客自己的选择时，就用后台设置的默认分栏；别把默认值覆盖成单栏。
+  if (saved === "1" || saved === "2" || saved === "3") apply(saved, false);
+  else layout();
+}
+
 function initMoments(): void {
   // ① 时间：模板先把服务端时间（UTC）渲染成兜底文本，这里换算成访客本地时间；
   //    一周内用相对时间，更久远的显示「月-日 时:分」，并把完整时间放进 title。
@@ -2044,6 +2128,7 @@ function boot(): void {
   initLinks();
   initLinkApplication();
   initFriendsFeed();
+  initMomentColumns();
   initMoments();
   initSteamHeatmap();
   initHeatmap();

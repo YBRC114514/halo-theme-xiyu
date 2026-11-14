@@ -958,6 +958,18 @@ spec:
               value: "3"
             - label: 5 条
               value: "5"
+        - $formkit: select
+          name: moments_columns
+          label: 瞬间页电脑端分栏
+          help: 手机端始终单栏；电脑端访客可在页面右上角自行切换 1 / 2 / 3 栏，选择会被浏览器记住
+          value: "1"
+          options:
+            - label: 单栏（信息流）
+              value: "1"
+            - label: 两栏
+              value: "2"
+            - label: 三栏
+              value: "3"
         - $formkit: switch
           name: show_comment_ranking
           label: 侧栏显示「评论读者榜」

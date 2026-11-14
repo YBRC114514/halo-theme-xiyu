@@ -9,18 +9,39 @@
        `tags` are supplied by the plugin; the theme ships this template so the
        route has something to render. -->
   <th:block th:fragment="content">
-    <div class="shell moments-page" th:with="activeTag=${param.tag == null or #lists.isEmpty(param.tag) ? '' : param.tag[0]}">
+    <!-- cols：后台设置的电脑端默认分栏（1 / 2 / 3）；访客在页面上切换后由脚本覆盖，
+         手机端 CSS 一律压回单栏。 -->
+    <div class="shell moments-page"
+         th:with="activeTag=${param.tag == null or #lists.isEmpty(param.tag) ? '' : param.tag[0]},
+                  cols=${theme.config.plugins != null and theme.config.plugins.moments_columns != null ? theme.config.plugins.moments_columns : '1'}"
+         th:attr="data-moment-cols=${cols == '2' or cols == '3' ? cols : '1'}">
       <div class="page-head">
         <nav class="breadcrumb" aria-label="面包屑"><a th:href="@{/}">首页</a><span>/</span><span>瞬间</span></nav>
         <h1>瞬间</h1>
         <p>随手记下的图文、视频与声音。</p>
       </div>
 
-      <div class="moment-toolbar" th:if="${tags != null and not #lists.isEmpty(tags)}">
-        <a class="chip" th:classappend="${#strings.isEmpty(activeTag)} ? 'is-active' : ''" th:href="@{/moments}">全部</a>
-        <a class="chip" th:each="t : ${tags}"
-           th:classappend="${activeTag == t.name} ? 'is-active' : ''"
-           th:href="@{/moments(tag=${t.name})}" th:text="${t.name}">标签</a>
+      <div class="moment-bar">
+        <div class="moment-toolbar" th:if="${tags != null and not #lists.isEmpty(tags)}">
+          <a class="chip" th:classappend="${#strings.isEmpty(activeTag)} ? 'is-active' : ''" th:href="@{/moments}">全部</a>
+          <a class="chip" th:each="t : ${tags}"
+             th:classappend="${activeTag == t.name} ? 'is-active' : ''"
+             th:href="@{/moments(tag=${t.name})}" th:text="${t.name}">标签</a>
+        </div>
+        <div class="view-switch moment-cols-switch" role="group" aria-label="切换分栏">
+          <button type="button" data-moment-cols="1" title="单栏" aria-label="单栏"
+                  th:attr="aria-pressed=${cols == '2' or cols == '3' ? 'false' : 'true'}">
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><rect x="2" y="2.5" width="10" height="9" rx="2" /></svg>
+          </button>
+          <button type="button" data-moment-cols="2" title="两栏" aria-label="两栏"
+                  th:attr="aria-pressed=${cols == '2' ? 'true' : 'false'}">
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><rect x="1.5" y="2.5" width="4.7" height="9" rx="1.6" /><rect x="7.8" y="2.5" width="4.7" height="9" rx="1.6" /></svg>
+          </button>
+          <button type="button" data-moment-cols="3" title="三栏" aria-label="三栏"
+                  th:attr="aria-pressed=${cols == '3' ? 'true' : 'false'}">
+            <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><rect x="1.5" y="2.5" width="2.9" height="9" rx="1.2" /><rect x="5.55" y="2.5" width="2.9" height="9" rx="1.2" /><rect x="9.6" y="2.5" width="2.9" height="9" rx="1.2" /></svg>
+          </button>
+        </div>
       </div>
 
       <div class="moment-feed" th:if="${moments != null and not #lists.isEmpty(moments.items)}">
