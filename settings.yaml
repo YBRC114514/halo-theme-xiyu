@@ -479,7 +479,58 @@ spec:
         # 「自定义文章模板」中逐篇选择（见 theme.yaml customTemplates.post）。
 
     # ------------------------------------------------------------------
-    # 6. 布局
+    # 6. 字体
+    # ------------------------------------------------------------------
+    - group: typography
+      label: 字体
+      formSchema:
+        - $formkit: radio
+          name: font_family
+          label: 更换字体
+          help: 悠哉字体（Yozai）是落霞孤鹜（LXGW）基于 Y.OzFont 衍生的中文手写字体，采用 SIL Open Font License 1.1，可免费商用。字体文件不打进主题包，由 jsDelivr 按需加载，不选则保持系统字体
+          value: system
+          options:
+            - label: 系统默认
+              value: system
+            - label: 悠哉字体（手写）
+              value: yozai
+            - label: 自定义字体
+              value: custom
+        - $formkit: radio
+          name: yozai_cdn
+          label: 悠哉字体 · 加载节点
+          help: 国内访问 cdn.jsdelivr.net 不稳定时，可换 Fastly 或 Gcore 节点，内容一致只是线路不同
+          value: cdn
+          options:
+            - label: jsDelivr 官方（cdn.jsdelivr.net）
+              value: cdn
+            - label: Fastly 节点（fastly.jsdelivr.net）
+              value: fastly
+            - label: Gcore 节点（gcore.jsdelivr.net）
+              value: gcore
+        - $formkit: radio
+          name: font_scope
+          label: 应用范围
+          help: 「仅正文」只在文章正文、独立页正文与文章横幅标题上使用所选字体，导航、按钮、侧栏仍用系统字体
+          value: all
+          options:
+            - label: 全站
+              value: all
+            - label: 仅正文
+              value: article
+        - $formkit: text
+          name: custom_family
+          label: 自定义字体 · 名称
+          help: 填 CSS 里的 font-family 名称，例如 LXGW WenKai、Noto Serif SC、Yozai（只填一个名称，不要带引号）
+          value: ""
+        - $formkit: text
+          name: custom_url
+          label: 自定义字体 · CSS 或字体文件地址
+          help: 填 .css 地址（Google Fonts、jsDelivr 的 font.css 等）会直接引入；填 .woff2 / .woff / .ttf / .otf 地址会自动生成 @font-face，此时对方需允许跨域（CORS），否则字体加载会失败
+          value: ""
+
+    # ------------------------------------------------------------------
+    # 7. 布局
     # ------------------------------------------------------------------
     - group: layout
       label: 布局
@@ -544,7 +595,7 @@ spec:
           value: true
 
     # ------------------------------------------------------------------
-    # 7. 功能
+    # 8. 功能
     # ------------------------------------------------------------------
     - group: features
       label: 功能
@@ -614,7 +665,7 @@ spec:
           value: ""
 
     # ------------------------------------------------------------------
-    # 8. 作者页
+    # 9. 作者页
     # ------------------------------------------------------------------
     - group: about
       label: 作者页
@@ -752,7 +803,7 @@ spec:
           value: "理想主义、共情力强，喜欢在文字里寻找意义。"
 
     # ------------------------------------------------------------------
-    # 9. 友链页
+    # 10. 友链页
     # ------------------------------------------------------------------
     - group: links
       label: 友链页
@@ -860,7 +911,7 @@ spec:
             4. 审核通过后会展示在下方对应分组中。
 
     # ------------------------------------------------------------------
-    # 10. SEO
+    # 11. SEO
     # ------------------------------------------------------------------
     - group: seo
       label: SEO
@@ -877,7 +928,7 @@ spec:
           value: true
 
     # ------------------------------------------------------------------
-    # 11. 插件联动 —— 仅在对应插件已安装并启用时生效
+    # 12. 插件联动 —— 仅在对应插件已安装并启用时生效
     # ------------------------------------------------------------------
     - group: plugins
       label: 插件联动
