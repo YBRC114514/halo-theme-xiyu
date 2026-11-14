@@ -1638,6 +1638,8 @@ body.drawer-open .site-header::after {
 }
 .moment-card {
   position: relative;
+  /* 卡片里有长链接、大图时不能让内容把网格轨道撑宽（多栏模式下会串列） */
+  min-width: 0;
   padding: 20px 22px;
   background: var(--surface);
   border: 1px solid var(--border);

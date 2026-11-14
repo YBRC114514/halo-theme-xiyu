@@ -42,10 +42,18 @@
 
     <div class="shell">
       <div class="content-grid" th:classappend="${theme.config.layout.show_sidebar == false} ? 'no-sidebar' : ''" th:attr="data-sidebar=${theme.config.layout.sidebar_position ?: 'right'}">
-        <!-- Pagination is owned by Halo: `posts` is the built-in paged result,
-             so prevUrl/nextUrl always agree with the site's page size. Overriding
-             it with a custom per-page value produced empty /page/N URLs. -->
-        <div class="content-main" id="post-list">
+        <!-- 每页条数由主题设置「列表与分页 → 首页每页文章数」决定，所以这里用
+             postFinder 自己分页。页码取自 Halo 内置的 `posts.page`（它已经按 /page/N 解析好
+             页号），再拿这个页号查自己的条数；Halo 只认 /page/N 路径参数，因此分页链接
+             一律输出 /page/N，不用 ?page=N。 -->
+        <div class="content-main" id="post-list"
+             th:with="cfgSize=${theme.config.lists != null and theme.config.lists.home_posts_count != null ? theme.config.lists.home_posts_count : 10},
+                      sizeNum=${#conversions.convert(cfgSize, 'java.lang.Integer')},
+                      pageSize=${sizeNum < 1 ? 10 : (sizeNum > 24 ? 24 : sizeNum)},
+                      total=${posts != null ? posts.total : 0},
+                      lastPage=${total <= 0 ? 1 : ((total + pageSize - 1) / pageSize)},
+                      pageNo=${posts != null and posts.page > lastPage ? lastPage : (posts != null and posts.page > 0 ? posts.page : 1)},
+                      posts=${postFinder.list({page: pageNo, size: pageSize})}">
           <div class="section-bar">
             <h2 class="section-title">最新文章</h2>
             <span class="section-hint" th:text="|共 ${posts.total} 篇文章 · 第 ${posts.page} 页|">共 0 篇文章</span>
@@ -87,11 +95,11 @@
           </div>
 
           <nav class="pagination" th:if="${posts.hasPrevious() or posts.hasNext()}" aria-label="分页导航">
-            <a th:if="${posts.hasPrevious()}" th:href="@{${posts.prevUrl}}">
+            <a th:if="${posts.hasPrevious()}" th:href="@{/page/{n}(n=${posts.page - 1})}">
               <svg class="icon" aria-hidden="true"><use href="#i-arrow-left"></use></svg>上一页
             </a>
             <span class="page-num" th:text="|${posts.page} / ${posts.totalPages}|">1 / 1</span>
-            <a th:if="${posts.hasNext()}" th:href="@{${posts.nextUrl}}">
+            <a th:if="${posts.hasNext()}" th:href="@{/page/{n}(n=${posts.page + 1})}">
               下一页<svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg>
             </a>
           </nav>

@@ -577,8 +577,7 @@ spec:
               value: compact
             - label: 标准
               value: roomy
-        # 首页每页文章数由 Halo 后台「设置 → 文章设置」统一控制。
-        # 主题不再提供独立选项：与站点分页大小不一致时会出现空白分页页。
+        # 首页每页文章数已移到「列表与分页」分组（home_posts_count）。
         - $formkit: switch
           name: show_cover
           label: 显示文章封面
@@ -930,7 +929,42 @@ spec:
           value: true
 
     # ------------------------------------------------------------------
-    # 12. 插件联动 —— 仅在对应插件已安装并启用时生效
+    # 12. 列表与分页 —— 每页条数由主题自己分页（?page=N），不再依赖站点统一分页大小
+    # ------------------------------------------------------------------
+    - group: lists
+      label: 列表与分页
+      formSchema:
+        - $formkit: number
+          name: home_posts_count
+          label: 首页每页文章数
+          help: 1–24 篇。改过之后首页分页由主题接管（/page/N），不再跟随 Halo 后台「文章设置 → 每页文章数」
+          value: 10
+          min: 1
+          max: 24
+          step: 1
+        - $formkit: number
+          name: moments_page_count
+          label: 瞬间页每页条数
+          help: 1–24 条，需启用 plugin-moments；分页同样按 /page/N 走
+          value: 10
+          min: 1
+          max: 24
+          step: 1
+        - $formkit: select
+          name: moments_columns
+          label: 瞬间页电脑端默认分栏
+          help: 手机端始终单栏；电脑端访客可在页面右上角自行切换 1 / 2 / 3 栏，选择会被浏览器记住
+          value: "1"
+          options:
+            - label: 单栏（信息流）
+              value: "1"
+            - label: 两栏
+              value: "2"
+            - label: 三栏
+              value: "3"
+
+    # ------------------------------------------------------------------
+    # 13. 插件联动 —— 仅在对应插件已安装并启用时生效
     # ------------------------------------------------------------------
     - group: plugins
       label: 插件联动
@@ -958,18 +992,6 @@ spec:
               value: "3"
             - label: 5 条
               value: "5"
-        - $formkit: select
-          name: moments_columns
-          label: 瞬间页电脑端分栏
-          help: 手机端始终单栏；电脑端访客可在页面右上角自行切换 1 / 2 / 3 栏，选择会被浏览器记住
-          value: "1"
-          options:
-            - label: 单栏（信息流）
-              value: "1"
-            - label: 两栏
-              value: "2"
-            - label: 三栏
-              value: "3"
         - $formkit: switch
           name: show_comment_ranking
           label: 侧栏显示「评论读者榜」

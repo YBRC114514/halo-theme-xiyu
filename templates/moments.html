@@ -23,10 +23,17 @@
        route has something to render. -->
   <th:block th:fragment="content">
     <!-- cols：后台设置的电脑端默认分栏（1 / 2 / 3）；访客在页面上切换后由脚本覆盖，
-         手机端 CSS 一律压回单栏。 -->
+         手机端 CSS 一律压回单栏。页号取自插件已解析好的 `moments.page`，
+         条数取「列表与分页 → 瞬间页每页条数」，再由主题自己查 momentFinder。 -->
     <div class="shell moments-page"
-         th:with="activeTag=${param.tag == null or #lists.isEmpty(param.tag) ? '' : param.tag[0]},
-                  cols=${theme.config.plugins != null and theme.config.plugins.moments_columns != null ? theme.config.plugins.moments_columns : '1'}"
+         th:with="activeTag=${param.tag == null or #lists.isEmpty(param.tag) ? null : param.tag[0]},
+                  cols=${theme.config.lists != null and theme.config.lists.moments_columns != null ? theme.config.lists.moments_columns : '1'},
+                  cfgCount=${theme.config.lists != null and theme.config.lists.moments_page_count != null ? theme.config.lists.moments_page_count : 10},
+                  countNum=${#conversions.convert(cfgCount, 'java.lang.Integer')},
+                  pageSize=${countNum < 1 ? 10 : (countNum > 24 ? 24 : countNum)},
+                  total=${moments != null ? moments.total : 0},
+                  lastPage=${total <= 0 ? 1 : ((total + pageSize - 1) / pageSize)},
+                  pageNo=${moments != null and moments.page > lastPage ? lastPage : (moments != null and moments.page > 0 ? moments.page : 1)}"
          th:attr="data-moment-cols=${cols == '2' or cols == '3' ? cols : '1'}">
       <div class="page-head">
         <nav class="breadcrumb" aria-label="面包屑"><a th:href="@{/}">首页</a><span>/</span><span>瞬间</span></nav>
@@ -34,7 +41,7 @@
         <p>随手记下的图文、视频与声音。</p>
       </div>
 
-      <div class="moment-bar">
+      <div class="moment-bar" th:if="${pluginFinder.available('PluginMoments')}">
         <div class="moment-toolbar" th:if="${tags != null and not #lists.isEmpty(tags)}">
           <a class="chip" th:classappend="${#strings.isEmpty(activeTag)} ? 'is-active' : ''" th:href="@{/moments}">全部</a>
           <a class="chip" th:each="t : ${tags}"
@@ -57,8 +64,12 @@
         </div>
       </div>
 
-      <div class="moment-feed" th:if="${moments != null and not #lists.isEmpty(moments.items)}">
-        <article class="moment-card" th:each="m : ${moments.items}"
+      <!-- 列表与分页由主题自己查 momentFinder，条数取「列表与分页 → 瞬间页每页条数」；
+           插件未启用时不调用 Finder（否则整页 500）。 -->
+      <th:block th:if="${pluginFinder.available('PluginMoments')}"
+                th:with="feed=${#strings.isEmpty(activeTag) ? momentFinder.list(pageNo, pageSize) : momentFinder.listByTag(pageNo, pageSize, activeTag)}">
+      <div class="moment-feed" th:if="${feed != null and not #lists.isEmpty(feed.items)}">
+        <article class="moment-card" th:each="m : ${feed.items}"
                  th:with="c=${m.spec.content},
                           rt=${m.spec.releaseTime ?: ''},
                           rtDate=${#strings.length(rt) >= 10 ? #strings.substring(rt, 5, 10) : ''},
@@ -92,16 +103,28 @@
         </article>
       </div>
 
-      <div class="empty-state" th:unless="${moments != null and not #lists.isEmpty(moments.items)}">
+      <div class="empty-state" th:if="${feed == null or #lists.isEmpty(feed.items)}">
         <svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg>
         <p>还没有发布瞬间。</p>
       </div>
 
-      <nav class="pagination" th:if="${moments != null and (moments.hasPrevious() or moments.hasNext())}" aria-label="分页导航">
-        <a th:if="${moments.hasPrevious()}" th:href="@{${moments.prevUrl}}"><svg class="icon" aria-hidden="true"><use href="#i-arrow-left"></use></svg>上一页</a>
-        <span class="page-num" th:text="|${moments.page} / ${moments.totalPages}|">1 / 1</span>
-        <a th:if="${moments.hasNext()}" th:href="@{${moments.nextUrl}}">下一页<svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg></a>
+      <nav class="pagination" th:if="${feed != null and (feed.hasPrevious() or feed.hasNext())}" aria-label="分页导航">
+        <th:block th:if="${feed.hasPrevious()}">
+          <a th:if="${#strings.isEmpty(activeTag)}" th:href="@{/moments/page/{n}(n=${feed.page - 1})}"><svg class="icon" aria-hidden="true"><use href="#i-arrow-left"></use></svg>上一页</a>
+          <a th:unless="${#strings.isEmpty(activeTag)}" th:href="@{/moments/page/{n}(n=${feed.page - 1}, tag=${activeTag})}"><svg class="icon" aria-hidden="true"><use href="#i-arrow-left"></use></svg>上一页</a>
+        </th:block>
+        <span class="page-num" th:text="|${feed.page} / ${feed.totalPages}|">1 / 1</span>
+        <th:block th:if="${feed.hasNext()}">
+          <a th:if="${#strings.isEmpty(activeTag)}" th:href="@{/moments/page/{n}(n=${feed.page + 1})}">下一页<svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg></a>
+          <a th:unless="${#strings.isEmpty(activeTag)}" th:href="@{/moments/page/{n}(n=${feed.page + 1}, tag=${activeTag})}">下一页<svg class="icon" aria-hidden="true"><use href="#i-arrow-right"></use></svg></a>
+        </th:block>
       </nav>
+      </th:block>
+
+      <div class="empty-state" th:unless="${pluginFinder.available('PluginMoments')}">
+        <svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg>
+        <p>尚未启用瞬间插件（plugin-moments），启用后这里会显示随手记。</p>
+      </div>
     </div>
   </th:block>
 </html>
