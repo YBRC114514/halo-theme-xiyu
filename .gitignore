@@ -11,3 +11,7 @@ Thumbs.db
 # 历史版本的安装包不入库：仅保留当前标识的 zip
 dist/_legacy/
 dist/theme-azure-isle-*.zip
+
+# 构建期从 public/assets/fonts 复制到 templates/assets/fonts 的字体分片：
+# 源文件（public/assets/fonts/）入库，产物副本不入库，避免仓库里存两份 7 MB 字体。
+templates/assets/fonts/

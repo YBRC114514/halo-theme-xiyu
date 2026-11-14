@@ -487,7 +487,7 @@ spec:
         - $formkit: radio
           name: font_family
           label: 更换字体
-          help: 悠哉字体（Yozai）是落霞孤鹜（LXGW）基于 Y.OzFont 衍生的中文手写字体，采用 SIL Open Font License 1.1，可免费商用。字体文件不打进主题包，由 jsDelivr 按需加载，不选则保持系统字体
+          help: 悠哉字体（Yozai）是落霞孤鹜（LXGW）基于 Y.OzFont 衍生的中文手写字体，采用 SIL Open Font License 1.1，可免费商用。字体文件已内嵌在主题包里，默认本地加载、不依赖任何第三方服务，不选则保持系统字体
           value: system
           options:
             - label: 系统默认
@@ -497,16 +497,18 @@ spec:
             - label: 自定义字体
               value: custom
         - $formkit: radio
-          name: yozai_cdn
-          label: 悠哉字体 · 加载节点
-          help: 国内访问 cdn.jsdelivr.net 不稳定时，可换 Fastly 或 Gcore 节点，内容一致只是线路不同
-          value: cdn
+          name: yozai_source
+          label: 悠哉字体 · 字体来源
+          help: 默认用主题内置的字体文件：全部离线可用、不依赖任何外部服务，浏览器只会按 unicode-range 下载当前页面用到的字形分片（通常几十 KB）。若想把这部分流量交给公共 CDN，可切换到 jsDelivr / Fastly / Gcore，三者内容完全一致、只是线路不同
+          value: local
           options:
-            - label: jsDelivr 官方（cdn.jsdelivr.net）
-              value: cdn
-            - label: Fastly 节点（fastly.jsdelivr.net）
+            - label: 主题内置（推荐，不依赖第三方）
+              value: local
+            - label: jsDelivr CDN（cdn.jsdelivr.net）
+              value: jsdelivr
+            - label: Fastly CDN（fastly.jsdelivr.net）
               value: fastly
-            - label: Gcore 节点（gcore.jsdelivr.net）
+            - label: Gcore CDN（gcore.jsdelivr.net）
               value: gcore
         - $formkit: radio
           name: font_scope

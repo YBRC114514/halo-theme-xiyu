@@ -1616,27 +1616,81 @@ body.drawer-open .site-header::after {
 .moment-item p a { color: var(--accent); }
 .ranking-widget comment-ranking-sidebar { display: block; min-height: 60px; }
 
-/* ---------- plugin-moments pages: /moments and /moments/{name} ---------- */
-.moment-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 22px; }
-.moment-feed { display: grid; gap: 18px; }
-.moment-card { padding: 20px 22px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
-.moment-card-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 0.84rem; color: var(--text-muted); }
-.moment-card-head img { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
-.moment-card-head .moment-owner { color: var(--text-secondary); font-weight: 600; }
-.moment-card-head .moment-permalink { margin-left: auto; color: var(--accent); }
-.moment-content { line-height: 1.85; color: var(--text); overflow-wrap: anywhere; }
-.moment-content img, .moment-content video { display: block; max-width: 100%; margin: 10px 0; border-radius: var(--radius-sm); }
-.moment-content audio { width: 100%; margin: 8px 0; }
-.moment-media-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-top: 12px; }
-.moment-media-grid img, .moment-media-grid video { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); }
-.moment-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-.moment-tags .chip { padding: 3px 9px; font-size: 0.78rem; }
-.moment-detail .moment-card { padding: 26px 28px; }
+/* ---------- plugin-moments: /moments 与 /moments/{name} ---------- */
+/* 单列信息流：卡片居中、图片通栏，按时间顺序从上往下读，不做多列瀑布流
+   （多列会让「最新」跳到右栏，时间线读起来是断的）。 */
+.moments-page { width: min(100% - 40px, 880px); }
+.moment-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; }
+.moment-feed { display: flex; flex-direction: column; gap: 16px; }
+.moment-card {
+  position: relative;
+  padding: 20px 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease), border-color 0.3s ease;
+}
+.moment-card:hover { transform: translateY(-2px); border-color: var(--border-strong); box-shadow: var(--shadow-hover); }
+
+/* 头部：圆角方形头像 + 站名 / 时间两行 */
+.moment-card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.moment-avatar { width: 44px; height: 44px; flex: none; border-radius: 14px; object-fit: cover; background: var(--bg); }
+/* 作者没设头像时，用首字渐变块兜底，避免头部只剩一行昵称显得空 */
+.moment-avatar.mark { display: grid; place-items: center; background: linear-gradient(135deg, var(--accent), var(--mint)); color: #fff; font-size: 1rem; font-weight: 800; line-height: 1; }
+.moment-avatar, .moment-avatar-link { display: block; flex: none; }
+.moment-avatar-link { border-radius: 14px; }
+.moment-meta { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.moment-owner { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+a.moment-owner:hover { color: var(--accent); }
+.moment-time { font-size: 0.76rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+.moment-content { font-size: 0.95rem; line-height: 1.9; color: var(--text); overflow-wrap: anywhere; }
+.moment-content > :first-child { margin-top: 0; }
+.moment-content > :last-child { margin-bottom: 0; }
+.moment-content p { margin: 0 0 0.75em; }
+.moment-content img { display: block; width: 100%; max-width: 100%; height: auto; border-radius: var(--radius-sm); }
+
+/* 媒体：单图按原比例完整展示（截图不被裁掉），多图走方形网格 */
+.moment-media-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.moment-media-grid.is-single { display: block; }
+.moment-media-grid img, .moment-media-grid video { display: block; width: 100%; border-radius: 14px; }
+/* 图片解码完成后再淡入，避免半张图先蹦出来 */
+html.js .moment-media-grid img { opacity: 0; transition: opacity 0.5s ease; }
+html.js .moment-media-grid img.is-loaded { opacity: 1; }
+.moment-media-grid:not(.is-single) img, .moment-media-grid:not(.is-single) video { aspect-ratio: 1; object-fit: cover; }
+.moment-media-grid.is-single img { width: auto; max-width: 100%; max-height: 460px; margin-inline: auto; cursor: zoom-in; }
+.moment-media-grid audio { width: 100%; margin: 8px 0; }
+.moment-media-grid video, .moment-media-grid audio { cursor: default; }
+
+/* 底部操作栏：左边标签、右边详情入口，共用一条分割线 */
+.moment-foot { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+.moment-tags { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
+.moment-tags .chip { padding: 3px 9px; font-size: 0.76rem; }
+.moment-permalink { display: inline-flex; align-items: center; gap: 4px; flex: none; margin-left: auto; font-size: 0.8rem; color: var(--text-muted); transition: color 0.2s ease; }
+.moment-permalink .icon { width: 14px; height: 14px; transition: transform 0.2s ease; }
+.moment-card:hover .moment-permalink { color: var(--accent); }
+.moment-card:hover .moment-permalink .icon { transform: translateX(2px); }
+
+/* 详情页：不跟随悬停上浮，正文与媒体可以更放松 */
+.moment-detail .moment-card:hover { transform: none; box-shadow: var(--shadow); border-color: var(--border); }
+.moment-detail .moment-media-grid.is-single img { max-height: none; }
 .moment-back { margin-top: 20px; font-size: 0.9rem; }
 .moment-back a { color: var(--accent); }
-@media (max-width: 640px) {
-  .moment-card { padding: 16px; }
-  .moment-media-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+/* 图片灯箱：点开看原图，点图片 / 点遮罩 / Esc 关闭 */
+.moment-lightbox { position: fixed; inset: 0; margin: auto; padding: 0; border: 0; width: fit-content; max-width: 94vw; max-height: 92vh; background: transparent; overflow: visible; }
+.moment-lightbox::backdrop { background: rgba(8, 12, 20, 0.78); backdrop-filter: blur(6px); }
+.moment-lightbox img { display: block; max-width: 94vw; max-height: 92vh; border-radius: 14px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45); cursor: zoom-out; }
+.moment-lightbox[open] { animation: lb-in 0.22s var(--ease) both; }
+@keyframes lb-in { from { opacity: 0; transform: scale(0.96); } }
+
+@media (max-width: 900px) {
+  .moments-page { width: min(100% - 28px, 880px); }
+  .moment-feed { gap: 14px; }
+  .moment-card { padding: 16px 16px; border-radius: 18px; }
+  .moment-avatar { width: 40px; height: 40px; border-radius: 12px; }
+  .moment-media-grid.is-single img { max-height: 340px; }
 }
 
 /* ---------- legacy engines: no color-mix() ----------

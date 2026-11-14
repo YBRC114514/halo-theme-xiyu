@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN" xmlns:th="https://www.thymeleaf.org" th:lang="${#locale.toLanguageTag}" th:fragment="html (head, content)" th:with="fontMode=${theme.config.typography.font_family ?: 'system'}, fontCdn=${theme.config.typography.yozai_cdn ?: 'cdn'}, fontScope=${theme.config.typography.font_scope ?: 'all'}, fontCustomFamily=${theme.config.typography.custom_family ?: ''}, fontCustomUrl=${theme.config.typography.custom_url ?: ''}" th:attr="data-color-scheme=${(theme.config.style.color_scheme ?: 'system') == 'system' ? 'auto' : (theme.config.style.color_scheme ?: 'system')}, data-radius=${theme.config.style.radius ?: 'soft'}, data-font-scale=${theme.config.style.font_scale ?: 'normal'}, data-hero=${theme.config.home.hero_height ?: 'normal'}, data-fullscreen=${theme.config.home.hero_fullscreen == true}, data-card-density=${theme.config.layout.card_density ?: 'compact'}, data-font-mode=${fontMode}, data-font-scope=${fontMode == 'system' ? 'all' : fontScope}, data-font-family=${fontCustomFamily}, data-font-url=${fontCustomUrl}" th:style="|--accent-user-light:${theme.config.style.accent_light ?: '#1158d1'};--accent-user-dark:${theme.config.style.accent_dark ?: '#008fec'}|">
+<html lang="zh-CN" xmlns:th="https://www.thymeleaf.org" th:lang="${#locale.toLanguageTag}" th:fragment="html (head, content)" th:with="fontMode=${theme.config.typography.font_family ?: 'system'}, fontSource=${theme.config.typography.yozai_source ?: (theme.config.typography.yozai_cdn == 'fastly' ? 'fastly' : (theme.config.typography.yozai_cdn == 'gcore' ? 'gcore' : 'local'))}, fontScope=${theme.config.typography.font_scope ?: 'all'}, fontCustomFamily=${theme.config.typography.custom_family ?: ''}, fontCustomUrl=${theme.config.typography.custom_url ?: ''}" th:attr="data-color-scheme=${(theme.config.style.color_scheme ?: 'system') == 'system' ? 'auto' : (theme.config.style.color_scheme ?: 'system')}, data-radius=${theme.config.style.radius ?: 'soft'}, data-font-scale=${theme.config.style.font_scale ?: 'normal'}, data-hero=${theme.config.home.hero_height ?: 'normal'}, data-fullscreen=${theme.config.home.hero_fullscreen == true}, data-card-density=${theme.config.layout.card_density ?: 'compact'}, data-font-mode=${fontMode}, data-font-scope=${fontMode == 'system' ? 'all' : fontScope}, data-font-family=${fontCustomFamily}, data-font-url=${fontCustomUrl}" th:style="|--accent-user-light:${theme.config.style.accent_light ?: '#1158d1'};--accent-user-dark:${theme.config.style.accent_dark ?: '#008fec'}|">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -28,11 +28,15 @@
         r.classList.add("color-scheme-" + finalAttr);
       })();
     </script>
-    <!-- 字体：悠哉字体走 jsDelivr 按需加载；自定义 .css 地址直接引入。
+    <!-- 字体：悠哉字体默认读主题自带的本地分片（assets/fonts/yozai），
+         也可以在设置里切换成 jsDelivr / Fastly / Gcore 的公共 CDN；
+         自定义 .css 地址直接引入。
          字体名与字体文件地址只放在 data-* 上，由下面的内联脚本拼字体栈，
          模板里不直接拼 CSS 字符串（引号会截断属性、也不利于过滤）。 -->
-    <link rel="stylesheet" th:if="${fontMode == 'yozai'}"
-      th:href="|https://${fontCdn == 'fastly' ? 'fastly.jsdelivr.net' : (fontCdn == 'gcore' ? 'gcore.jsdelivr.net' : 'cdn.jsdelivr.net')}/npm/cn-fontsource-yozai-regular@1.0.9/font.css|" />
+    <link rel="stylesheet" th:if="${fontMode == 'yozai' and fontSource == 'local'}"
+      th:href="${#theme.assets('/fonts/yozai/yozai.css')}" />
+    <link rel="stylesheet" th:if="${fontMode == 'yozai' and fontSource != 'local'}"
+      th:href="|https://${fontSource == 'fastly' ? 'fastly.jsdelivr.net' : (fontSource == 'gcore' ? 'gcore.jsdelivr.net' : 'cdn.jsdelivr.net')}/npm/cn-fontsource-yozai-regular@1.0.9/font.css|" />
     <link rel="stylesheet" th:if="${fontMode == 'custom' and #strings.endsWith(fontCustomUrl, '.css')}" th:href="${fontCustomUrl}" />
     <script>
       /* 字体：设置里选了字体时，在首屏渲染前把 --font-user 写到根元素上。 */
@@ -52,8 +56,8 @@
         r.style.setProperty("--font-user", JSON.stringify(fam) + ', "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif');
       })();
     </script>
-    <script type="module" crossorigin src="/themes/theme-xiyu/assets/layout-DISQpaeS.js"></script>
-    <link rel="stylesheet" crossorigin href="/themes/theme-xiyu/assets/layout-D3Gr6zJz.css">
+    <script type="module" crossorigin src="/themes/theme-xiyu/assets/layout-35wEFwxP.js"></script>
+    <link rel="stylesheet" crossorigin href="/themes/theme-xiyu/assets/layout-BeYBzaw2.css">
   </head>
   <body th:attr="data-show-reveal=${theme.config.features.show_reveal != false}, data-code-copy=${theme.config.features.show_code_copy != false}">
     <svg class="svg-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">

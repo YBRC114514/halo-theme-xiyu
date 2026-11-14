@@ -1960,6 +1960,77 @@ function initHitokoto(): void {
   });
 }
 
+/* ------------------------------------------------------------------ *
+ * Moments: local-time labels + click-to-zoom lightbox
+ * ------------------------------------------------------------------ */
+function initMoments(): void {
+  // ① 时间：模板先把服务端时间（UTC）渲染成兜底文本，这里换算成访客本地时间；
+  //    一周内用相对时间，更久远的显示「月-日 时:分」，并把完整时间放进 title。
+  const pad = (n: number): string => String(n).padStart(2, "0");
+  $$<HTMLTimeElement>(".moment-time[data-iso]").forEach((el) => {
+    const iso = el.dataset.iso || el.getAttribute("datetime") || "";
+    const ts = Date.parse(iso);
+    if (!iso || Number.isNaN(ts)) return;
+    const d = new Date(ts);
+    const diff = Math.max(0, Date.now() - ts) / 1000;
+    const clock = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    let label: string;
+    if (diff < 60) label = "刚刚";
+    else if (diff < 3600) label = `${Math.max(1, Math.floor(diff / 60))} 分钟前`;
+    else if (diff < 86400) label = `${Math.floor(diff / 3600)} 小时前`;
+    else if (diff < 172800) label = `昨天 ${clock}`;
+    else if (diff < 604800) label = `${Math.floor(diff / 86400)} 天前`;
+    else label = `${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${clock}`;
+    el.textContent = label;
+    el.title = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${clock}`;
+  });
+
+  // ② 图片淡入：懒加载的图解码完成后才显示，避免加载过程中闪半张图。
+  $$<HTMLImageElement>(".moment-media-grid img").forEach((img) => {
+    if (img.complete && img.naturalWidth > 0) {
+      img.classList.add("is-loaded");
+      return;
+    }
+    const done = (): void => img.classList.add("is-loaded");
+    img.addEventListener("load", done, { once: true });
+    img.addEventListener("error", done, { once: true });
+  });
+
+  // ③ 灯箱：瞬间图片点开看原图，点图片 / 点遮罩 / Esc 都能关。
+  const zoomables = $$<HTMLImageElement>(".moment-media-grid img[data-zoom]");
+  if (!zoomables.length) return;
+  const dialog = $<HTMLDialogElement>("dialog.moment-lightbox");
+  const target = dialog ?? document.createElement("dialog");
+  if (!dialog) {
+    target.className = "moment-lightbox";
+    target.setAttribute("aria-label", "查看大图");
+    document.body.appendChild(target);
+  }
+  let big = target.querySelector("img");
+  if (!big) {
+    const created = document.createElement("img");
+    created.alt = "瞬间图片";
+    target.appendChild(created);
+    big = created;
+  }
+  const shot = big;
+  const close = (): void => {
+    if (typeof target.close === "function") target.close();
+    else target.removeAttribute("open");
+  };
+  target.addEventListener("click", (evt) => {
+    if (evt.target === target || evt.target === shot) close();
+  });
+  zoomables.forEach((thumb) => {
+    thumb.addEventListener("click", () => {
+      shot.src = thumb.currentSrc || thumb.src;
+      shot.alt = thumb.alt || "瞬间图片";
+      if (typeof target.showModal === "function") target.showModal();
+      else target.setAttribute("open", "");
+    });
+  });
+}
+
 function boot(): void {
   initHeroHeader();
   initAuthEntry();
@@ -1973,6 +2044,7 @@ function boot(): void {
   initLinks();
   initLinkApplication();
   initFriendsFeed();
+  initMoments();
   initSteamHeatmap();
   initHeatmap();
   initExternalLinks();
