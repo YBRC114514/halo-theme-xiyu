@@ -1673,8 +1673,19 @@ a.moment-owner:hover { color: var(--accent); }
 .moment-media-grid.is-single { display: block; }
 .moment-media-grid img, .moment-media-grid video { display: block; width: 100%; border-radius: 14px; }
 /* 图片解码完成后再淡入，避免半张图先蹦出来 */
-html.js .moment-media-grid img { opacity: 0; transition: opacity 0.5s ease; }
+html.js .moment-media-grid img { opacity: 0; transition: opacity 0.32s ease; }
 html.js .moment-media-grid img.is-loaded { opacity: 1; }
+/* 卡片还在进场（未 is-visible）时，图片一律不显——否则会出现"图先清晰、
+   卡片后包上"的错位感：图片自带淡入、卡片另有 80ms 递增的交错延迟，两条时间线会打架。 */
+html.js .moment-feed .moment-card:not(.is-visible) .moment-media-grid img { opacity: 0; }
+/* 瞬间卡片比文章卡大得多：不做 blur / 缩放（整页会糊成一团、缩放像在抖），
+   只留 12px 上移 + 淡入，时长也压到 0.34s，进页面更快看清内容。 */
+html.js .moment-feed .moment-card[data-reveal] {
+  transform: translateY(12px);
+  filter: none;
+  transition: opacity 0.34s ease, transform 0.42s var(--ease);
+}
+html.js .moment-feed .moment-card[data-reveal].is-visible { transform: none; }
 .moment-media-grid:not(.is-single) img, .moment-media-grid:not(.is-single) video { aspect-ratio: 1; object-fit: cover; }
 .moment-media-grid.is-single img { width: auto; max-width: 100%; max-height: 460px; margin-inline: auto; cursor: zoom-in; }
 .moment-media-grid audio { width: 100%; margin: 8px 0; }

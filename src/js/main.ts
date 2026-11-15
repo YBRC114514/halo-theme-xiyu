@@ -422,7 +422,10 @@ function initReveal(): void {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
         const el = entry.target as HTMLElement;
-        showReveal(el, Math.min(index++ * 80, 480));
+        // 瞬间页卡片高、数量多，交错延迟再按 80ms 递增会让最后一张等近 0.5s 才出现，
+        // 看起来像"内容没加载完"；这里用更短的步长和上限。
+        const moment = el.classList.contains("moment-card");
+        showReveal(el, Math.min(index++ * (moment ? 30 : 80), moment ? 150 : 480));
         revealObserver?.unobserve(el);
       });
     },
@@ -430,10 +433,10 @@ function initReveal(): void {
   );
   items.forEach((el) => revealObserver!.observe(el));
 
-  // Screenshot / long-capture tools stitch the whole page without ever
-  // scrolling, so off-screen [data-reveal] nodes would stay at opacity:0 and
-  // show up as large blank areas. If the visitor never interacted, reveal
-  // everything after a short grace period (normal scrolling keeps the effect).
+  // 整页截图工具会把视口撑到页面高度、且从不滚动，此时 [data-reveal] 会留在
+  // opacity:0，截出来是一片空白——所以只在这种情况下兜底把内容全显示。
+  // ⚠️ 不能无条件兜底：以前是 1.5s 后把全部元素 reveal 掉，结果访客慢慢往下滚时，
+  //    下半页卡片早就被一次性显示完了，看着"有的板块有动画、有的没有"。
   let interacted = false;
   const markInteracted = () => { interacted = true; };
   ["scroll", "wheel", "touchmove", "keydown", "pointerdown"].forEach((evt) =>
@@ -441,12 +444,18 @@ function initReveal(): void {
   );
   const fallback = () => {
     if (interacted) return;
+    // 只有视口被撑到远超真实屏幕高度（长截图工具会把视口设成页面高度）时才兜底。
+    // 阈值不能小：页面内容少时 scrollHeight 本来就接近视口高度，用 1.15 倍判断
+    // 会把正常浏览误判成截图模式，卡片一次性显示、动画就没了。
+    const vh = window.innerHeight;
+    const stitched = vh >= 1600 && document.documentElement.scrollHeight <= vh + 8;
+    if (!stitched) return;
     if ($$("[data-reveal]:not(.is-visible)").length) {
       revealObserver?.disconnect();
       revealAll();
     }
   };
-  window.setTimeout(fallback, 1500);
+  window.setTimeout(fallback, 1200);
   // Capture tools may leave the page without ever scrolling; make sure the
   // final state is fully visible when the document is torn down.
   window.addEventListener("pagehide", () => { revealObserver?.disconnect(); revealAll(); });
@@ -2008,15 +2017,18 @@ function initMomentColumns(): void {
       });
       colEls.forEach((el) => feed.appendChild(el));
     }
-    const heights = new Array<number>(n).fill(0);
-    order.forEach((card) => {
-      let target = 0;
-      for (let i = 1; i < n; i++) if (heights[i] < heights[target]) target = i;
-      colEls[target].appendChild(card);
-      // 换到新列宽后高度会变，读一次 offsetHeight 再把真实高度累加进列高。
-      heights[target] += card.offsetHeight + 20;
-    });
     feed.classList.add("is-columns");
+    void feed.offsetHeight;
+    // 按时间顺序轮流落列（1→左、2→右、3→左…）。
+    // 不用「最矮列优先」：那个策略依赖卡片真实高度，而图片是懒加载的，
+    // 首次分配时图还没下来、卡片偏矮，分配结果与图片加载完后再分不一样，
+    // 于是每次切分栏卡片会换列跳一下。轮转与高度无关，切换前后完全一致。
+    order.forEach((card, i) => {
+      const target = i % n;
+      // 已经在这一列就不动它：无谓的 appendChild 会把卡片移到列尾，
+      // 触发一次重排（悬停态中断、图片重绘），看起来像"闪一下"。
+      if (card.parentElement !== colEls[target]) colEls[target].appendChild(card);
+    });
   };
 
   const layout = (): void => {
@@ -2043,19 +2055,6 @@ function initMomentColumns(): void {
   buttons.forEach((btn) => {
     btn.addEventListener("click", () => apply(btn.getAttribute("data-moment-cols") || "1", true));
   });
-
-  // 图片解码完卡片会长高：只在全部图片落位后重排一次，让各列更均衡，
-  // 不做持续监听——列内 flex 堆叠本身不会错位。
-  let rebalanced = false;
-  const rebalance = (): void => {
-    if (rebalanced) return;
-    const imgs = Array.from(feed.querySelectorAll("img"));
-    if (imgs.some((img) => !img.complete)) return;
-    rebalanced = true;
-    layout();
-  };
-  feed.querySelectorAll("img").forEach((img) => img.addEventListener("load", rebalance, { once: true }));
-  window.addEventListener("load", rebalance, { once: true });
 
   const onBreakpoint = (): void => layout();
   if (typeof desktop.addEventListener === "function") desktop.addEventListener("change", onBreakpoint);

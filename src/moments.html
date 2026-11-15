@@ -28,7 +28,7 @@
         <p>随手记下的图文、视频与声音。</p>
       </div>
 
-      <div class="moment-bar" th:if="${pluginFinder.available('PluginMoments')}">
+      <div class="moment-bar" th:if="${pluginFinder.available('PluginMoments')}" data-reveal>
         <div class="moment-toolbar" th:if="${tags != null and not #lists.isEmpty(tags)}">
           <a class="chip" th:classappend="${#strings.isEmpty(activeTag)} ? 'is-active' : ''" th:href="@{/moments}">全部</a>
           <a class="chip" th:each="t : ${tags}"
