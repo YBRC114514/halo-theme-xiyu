@@ -1976,27 +1976,53 @@ function initMomentColumns(): void {
     (el): el is HTMLElement => el instanceof HTMLElement && el.classList.contains("moment-card")
   );
   if (!cards.length) return;
+  // 卡片的原始（时间）顺序，切换栏数时按它还原或重新分配。
+  const order = cards.slice();
   const buttons = $$<HTMLButtonElement>(".moment-cols-switch [data-moment-cols]");
   const desktop = window.matchMedia("(min-width: 901px)");
-  const GAP = 16; // 卡片之间的竖向间距，与 CSS 的 16px 一致
+  let colEls: HTMLElement[] = [];
   let cols = page.getAttribute("data-moment-cols") === "2" || page.getAttribute("data-moment-cols") === "3"
     ? (page.getAttribute("data-moment-cols") as string)
     : "1";
 
-  const layout = (): void => {
-    const n = Number(cols);
-    // 单栏（或手机）时退回普通文档流：不写跨行，交给 gap 管间距。
-    feed.classList.remove("is-masonry");
-    cards.forEach((card) => card.style.removeProperty("grid-row-end"));
-    if (!desktop.matches || n < 2) return;
-    // 栏宽变了高度就变了，量之前先让浏览器按新宽度排一次。
-    void feed.offsetHeight;
-    const heights = cards.map((card) => card.getBoundingClientRect().height);
-    cards.forEach((card, i) => {
-      card.style.gridRowEnd = `span ${Math.max(1, Math.ceil(heights[i]) + GAP)}`;
+  const clearCols = (): void => {
+    colEls.forEach((el) => el.remove());
+    colEls = [];
+    feed.classList.remove("is-columns");
+  };
+
+  // 单栏：卡片按原顺序放回 feed，交给 flex column + gap 排。
+  const stackSingle = (): void => {
+    clearCols();
+    order.forEach((card) => feed.appendChild(card));
+  };
+
+  // 多栏：建 n 个列容器，按「当前最矮的一列」逐张分配（宽度恒等分、高度各随内容）。
+  const stackColumns = (n: number): void => {
+    if (colEls.length !== n) {
+      clearCols();
+      colEls = Array.from({ length: n }, () => {
+        const el = document.createElement("div");
+        el.className = "moment-col";
+        return el;
+      });
+      colEls.forEach((el) => feed.appendChild(el));
+    }
+    const heights = new Array<number>(n).fill(0);
+    order.forEach((card) => {
+      let target = 0;
+      for (let i = 1; i < n; i++) if (heights[i] < heights[target]) target = i;
+      colEls[target].appendChild(card);
+      // 换到新列宽后高度会变，读一次 offsetHeight 再把真实高度累加进列高。
+      heights[target] += card.offsetHeight + 20;
     });
-    // 跨行写完再挂 is-masonry：否则 1px 行会先把所有卡片压成一帧瘦条。
-    feed.classList.add("is-masonry");
+    feed.classList.add("is-columns");
+  };
+
+  const layout = (): void => {
+    const n = desktop.matches ? Number(cols) : 1;
+    if (n < 2) stackSingle();
+    else stackColumns(n);
   };
 
   const apply = (next: string, persist: boolean): void => {
@@ -2018,23 +2044,22 @@ function initMomentColumns(): void {
     btn.addEventListener("click", () => apply(btn.getAttribute("data-moment-cols") || "1", true));
   });
 
-  // 懒加载图片落位后卡片会长高，重新折算一次跨行，避免叠在下一张卡上。
-  let queued = 0;
-  const schedule = (): void => {
-    if (queued) return;
-    queued = window.requestAnimationFrame(() => {
-      queued = 0;
-      layout();
-    });
+  // 图片解码完卡片会长高：只在全部图片落位后重排一次，让各列更均衡，
+  // 不做持续监听——列内 flex 堆叠本身不会错位。
+  let rebalanced = false;
+  const rebalance = (): void => {
+    if (rebalanced) return;
+    const imgs = Array.from(feed.querySelectorAll("img"));
+    if (imgs.some((img) => !img.complete)) return;
+    rebalanced = true;
+    layout();
   };
-  if (typeof ResizeObserver !== "undefined") {
-    const ro = new ResizeObserver(schedule);
-    cards.forEach((card) => ro.observe(card));
-  } else {
-    feed.querySelectorAll("img").forEach((img) => img.addEventListener("load", schedule, { once: true }));
-  }
-  if (typeof desktop.addEventListener === "function") desktop.addEventListener("change", schedule);
-  else desktop.addListener(schedule);
+  feed.querySelectorAll("img").forEach((img) => img.addEventListener("load", rebalance, { once: true }));
+  window.addEventListener("load", rebalance, { once: true });
+
+  const onBreakpoint = (): void => layout();
+  if (typeof desktop.addEventListener === "function") desktop.addEventListener("change", onBreakpoint);
+  else desktop.addListener(onBreakpoint);
 
   let saved = "";
   try {

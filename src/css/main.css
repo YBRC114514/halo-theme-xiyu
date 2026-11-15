@@ -1624,17 +1624,18 @@ body.drawer-open .site-header::after {
 .moment-toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
 .moment-cols-switch { display: none; margin-left: auto; }
 .moment-cols-switch button[aria-pressed="true"] { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
-.moment-feed { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; align-items: start; }
-/* 多栏时不追求行对齐：脚本按卡片真实高度写入跨行数，行为 1px、间距由跨行数自带，
-   于是每张卡紧贴前一张卡片，不会因为同一行里有个高个子而空出一大片。
-   dense 让后面的卡片回头补前面的空档，避免全部堆到最右侧一栏。 */
-.moment-feed.is-masonry { grid-auto-rows: 1px; row-gap: 0; grid-auto-flow: row dense; }
+.moment-feed { display: flex; flex-direction: column; gap: 16px; }
+/* 多栏：脚本按「当前最矮的一列」把卡片分进 .moment-col，列内纵向 flex 堆叠。
+   这样栏宽恒等分、高度各随内容，卡片间距由 gap 精确控制，图片懒加载长高也不会错位。 */
+.moment-feed.is-columns { flex-direction: row; align-items: flex-start; gap: 20px; }
+.moment-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; gap: 20px; }
 @media (min-width: 901px) {
   .moment-cols-switch { display: inline-flex; }
   .moments-page[data-moment-cols="2"] { width: min(100% - 40px, 1160px); }
   .moments-page[data-moment-cols="3"] { width: min(100% - 40px, 1440px); }
-  .moments-page[data-moment-cols="2"] .moment-feed { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .moments-page[data-moment-cols="3"] .moment-feed { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  /* 多栏时行、列间距都放宽到 20px，卡片之间留呼吸感 */
+  .moments-page[data-moment-cols="2"] .moment-feed,
+  .moments-page[data-moment-cols="3"] .moment-feed { gap: 20px; }
 }
 .moment-card {
   position: relative;
